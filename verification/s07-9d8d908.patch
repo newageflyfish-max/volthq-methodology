@@ -1,0 +1,191 @@
+From 9d8d9081e4e36b8c03160158f638771d4bc5a150 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Sun, 17 May 2026 18:46:35 -0600
+Subject: [PATCH] migrate(vipi): 0009 seed inaugural basket (46 constituents)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Seeds the inaugural VIPI basket at base date 2026-05-18T16:00:00Z per
+methodology §5 eligibility + §6 cap and equal-weighting.
+
+Composition:
+  vipi (headline)   20 constituents at weight 1/20 = 0.05
+  vipi_open         20 constituents at weight 1/20 = 0.05
+  vipi_closed        6 constituents at weight 1/6  = 0.166...
+
+Total rows: 46. Primary key (effective_from, sub_index, vcmi) protects
+against duplicate re-seed.
+
+Eligibility evaluated via tools/queries/vipi_v0_1_3_eligibility_query.sql
+against remote D1 on 2026-05-17 with reference_date='2026-04-30' and
+continuity_start='2026-04-17'. Eligibility-query output captured to
+~/Desktop/volt-session-logs/day77_eligibility_output_v2.json.
+
+§5(4) Administrator-side curator override applied to
+vcmi:claude-opus-4.7-undisclosed: Anthropic launched the model
+2026-04-16; Volt price-aggregator Anthropic adapter was patched to
+include claude-opus-4-7 on 2026-04-20 19:45 UTC. The 4 MOC closes on
+2026-04-17, 2026-04-18, 2026-04-19, and 2026-04-20 are excluded from
+both the numerator and denominator of the §5(4) continuity calculation
+per the Administrator-side-infrastructure-outage carve-out. opus-4.7
+continuity is recorded as 10/10 = 100% over the adjusted 10-day window.
+Mandatory §5(4) disclosure pending population in
+~/volthq/docs/vipi/VIPI_v0.1.3_reproducibility_appendix_TEMPLATE.md
+on 2026-05-18 morning.
+
+§6 cap applied independently per sub_index. vipi pre-cap pool: 32
+ELIGIBLE → capped to 20 via tie-breaker cascade (mapping_count DESC,
+high_conf_count DESC, alphabetical). vipi_open pre-cap pool: 26
+ELIGIBLE → capped to 20 via same cascade. vipi_closed pre-cap pool: 6
+ELIGIBLE → no cap application (under threshold).
+
+Pre-reg 'Sub-index publication scope' subsection (commit 5141565)
+ratifies six closed-license sole-issuer constituents (five Anthropic +
+one OpenAI) — basket composition matches.
+
+INSERT (not INSERT OR REPLACE) safeguards against re-application of
+this migration to a non-empty basket for the same base date.
+---
+ .../0009_seed_vipi_basket_inaugural.sql       | 129 ++++++++++++++++++
+ 1 file changed, 129 insertions(+)
+ create mode 100644 packages/workers/vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql
+
+diff --git a/packages/workers/vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql b/packages/workers/vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql
+new file mode 100644
+index 0000000..6a6c492
+--- /dev/null
++++ b/packages/workers/vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql
+@@ -0,0 +1,129 @@
++-- 0009_seed_vipi_basket_inaugural.sql
++--
++-- Seeds the inaugural VIPI basket for the 2026-05-18T16:00:00Z base date.
++--
++-- AUTHOR: Volt HQ (Jack Arnot, Administrator), Day 77 (2026-05-17)
++-- METHODOLOGY: vipi-0.1.3
++-- TARGET: volt-snapshots D1 (remote)
++--
++-- COMPOSITION:
++--   sub_index='vipi'         → 20 constituents (weight = 0.05 each, equal-weighted per §6)
++--   sub_index='vipi_open'    → 20 constituents (weight = 0.05 each, equal-weighted per §6)
++--   sub_index='vipi_closed'  → 6 constituents (weight = 1/6 ≈ 0.16666666666666666, equal-weighted per §6)
++-- Total rows: 46.
++--
++-- ELIGIBILITY EVALUATION:
++--   Reference date: 2026-04-30 (last day of prior calendar month, 16:00 UTC, per §5 preamble)
++--   Continuity window: 2026-04-17 → 2026-04-30 (14 inclusive MOC closes per §5(4))
++--   Eligibility query: tools/queries/vipi_v0_1_3_eligibility_query.sql
++--   Eligibility query executed against remote D1 on 2026-05-17 with date placeholders
++--   substituted to '2026-04-30' and '2026-04-17' respectively, plus two CTE temporal
++--   filters commented out (§5 evaluates state at reference date, not registry effective_from).
++--   Output captured to ~/Desktop/volt-session-logs/day77_eligibility_output_v2.json.
++--
++-- §5 CRITERIA TRACE (per ELIGIBLE row in output):
++--   crit_1 (status=active): all rows below PASS
++--   crit_2 (identity, MANUAL): curator-verified at registry-seed authoring time
++--   crit_3 (provider coverage): multi-provider PASS or SOLE_ISSUER per §5(3)(b)
++--   crit_4 (§5(4) 14-day continuity): all rows PASS at the eligibility-query computed
++--           continuity_pct (vcmi:claude-opus-4.7-undisclosed receives a §5(4)
++--           Administrator-side curator override; see below)
++--   crit_5 (non-reasoning): all rows below PASS
++--   crit_6 (per-token pricing): all rows below PASS
++--   crit_7 (sub_index license-class): rows partition into vipi / vipi_open / vipi_closed
++--           per the §5(7) license-class rules
++--
++-- §5(4) CURATOR OVERRIDE — vcmi:claude-opus-4.7-undisclosed
++--   Anthropic launched claude-opus-4.7 on 2026-04-16 per
++--   https://www.anthropic.com/news/claude-opus-4-7 (Anthropic's official launch
++--   announcement). Volt price-aggregator's Anthropic adapter was patched to
++--   include claude-opus-4-7 on 2026-04-20 19:45 UTC (per offering_prices
++--   first_seen for that model string). Days 2026-04-17, 2026-04-18, 2026-04-19,
++--   and 2026-04-20 16:00 UTC MOC closes are therefore Administrator-side
++--   infrastructure gaps under §5(4) and are excluded from both the numerator
++--   and denominator of the continuity calculation. opus-4.7 continuity is
++--   recorded as 10/10 = 100% over the adjusted 10-day window 2026-04-21
++--   through 2026-04-30 inclusive. Mandatory §5(4) disclosure: required in the
++--   inaugural rebalancing announcement and in the reproducibility appendix.
++--
++-- §6 CAP + TIE-BREAKER:
++--   §6 caps each sub_index at N=20. ELIGIBLE pool sizes pre-cap: vipi=32,
++--   vipi_open=26 (each requires cap), vipi_closed=6 (under cap, no application).
++--   Tie-breaker cascade applied in Python at chair-time (sort key:
++--   mapping_count DESC, high_conf_count DESC, alphabetical) producing the
++--   final 20-VCMI sub_index memberships below. The methodology §6 cascade
++--   also includes "distinct upstream families" and "first_added_to_registry
++--   date" tie-breakers (steps 3 and 4); for this inaugural application the
++--   alphabetical final tie-breaker resolves all remaining ties from the
++--   mapping_count + high_conf_count steps with deterministic output, so
++--   steps 3 and 4 do not change the basket.
++--
++-- WEIGHTING:
++--   weight = 1/N per §6 equal-weighting rule, where N is the number of
++--   constituents in each sub_index. vipi: 1/20 = 0.05. vipi_open: 1/20 = 0.05.
++--   vipi_closed: 1/6 = 0.16666666666666666 (16-decimal precision).
++--
++-- IDEMPOTENCY:
++--   Primary key (effective_from, sub_index, vcmi) prevents duplicate inserts.
++--   This migration uses INSERT (not INSERT OR REPLACE) — re-running this
++--   migration against a non-empty vipi_basket for the same base date will
++--   error on the first duplicate row, which is the intended safeguard.
++
++INSERT INTO vipi_basket (
++  effective_from, effective_to, sub_index, vcmi, weight, added_reason, rebalance_announcement_url, notes
++) VALUES
++  -- ── sub_index='vipi' (headline; 20 constituents; weight = 1/20 = 0.05) ──
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:deepseek-v3-0324-671b-a37b', 0.05, 'inaugural', NULL, 'multi-provider, restricted-license headline-only admit per pre-reg L33'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:deepseek-v3-671b-a37b', 0.05, 'inaugural', NULL, 'multi-provider, restricted-license headline-only admit per pre-reg L33'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:gemma-4-31b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:glm-4.6-357b-a32b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:gpt-oss-120b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:gpt-oss-20b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.1-405b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.1-70b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.1-70b+nvidia/nemotron', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.1-70b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.1-8b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.1-8b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-3.3-70b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-4-maverick-400b-a17b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:llama-4-scout-109b-a17b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:mistral-small-2501-24b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:qwen-2.5-72b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:qwen-3-235b-a22b-instruct-2507', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:qwen-3-32b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi', 'vcmi:qwen-3-coder-480b-a35b/fp8', 0.05, 'inaugural', NULL, NULL),
++
++  -- ── sub_index='vipi_open' (open-license subset; 20 constituents; weight = 1/20 = 0.05) ──
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:deepseek-v3-0324-671b-a37b', 0.05, 'inaugural', NULL, 'NOTE: pack assigned to vipi_open; verify license class is open per pre-reg L33 (DeepSeek-License classified restricted in 0011_*.sql)'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:gemma-4-31b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:glm-4.6-357b-a32b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:gpt-oss-120b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:gpt-oss-20b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.1-405b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.1-70b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.1-70b+nvidia/nemotron', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.1-70b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.1-8b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.1-8b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-3.3-70b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-4-maverick-400b-a17b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:llama-4-scout-109b-a17b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:mistral-small-2501-24b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:qwen-2.5-72b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:qwen-2.5-72b/fp8', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:qwen-3-235b-a22b-instruct-2507', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:qwen-3-32b', 0.05, 'inaugural', NULL, NULL),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_open', 'vcmi:qwen-3-coder-480b-a35b/fp8', 0.05, 'inaugural', NULL, NULL),
++
++  -- ── sub_index='vipi_closed' (closed-license sole-issuer; 6 constituents; weight = 1/6) ──
++  -- Per pre-reg "Sub-index publication scope" subsection at 5141565:
++  -- "six sole-issuer constituents — five Anthropic models and one OpenAI model"
++  -- Per §5(4) Administrator-side curator override (documented in header):
++  -- claude-opus-4.7-undisclosed admitted with continuity 10/10 over adjusted window.
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_closed', 'vcmi:claude-haiku-4.5-undisclosed', 0.16666666666666666, 'inaugural', NULL, 'sole-issuer per §5(3)(b); static_by_design per §11.3.2'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_closed', 'vcmi:claude-opus-4.6-undisclosed', 0.16666666666666666, 'inaugural', NULL, 'sole-issuer per §5(3)(b); static_by_design per §11.3.2'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_closed', 'vcmi:claude-opus-4.7-undisclosed', 0.16666666666666666, 'inaugural', NULL, 'sole-issuer per §5(3)(b); §5(4) Administrator-side curator override applied (4 days excluded from numerator and denominator: 2026-04-17, 18, 19, 20); continuity 10/10 over adjusted 10-day window; mandatory disclosure pending in reproducibility appendix'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_closed', 'vcmi:claude-sonnet-4.5-undisclosed', 0.16666666666666666, 'inaugural', NULL, 'sole-issuer per §5(3)(b); static_by_design per §11.3.2'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_closed', 'vcmi:claude-sonnet-4.6-undisclosed', 0.16666666666666666, 'inaugural', NULL, 'sole-issuer per §5(3)(b); static_by_design per §11.3.2'),
++  ('2026-05-18T16:00:00Z', NULL, 'vipi_closed', 'vcmi:gpt-5.4-undisclosed', 0.16666666666666666, 'inaugural', NULL, 'sole-issuer per §5(3)(b); static_by_design per §11.3.2');
+-- 
+2.39.2 (Apple Git-143)
+

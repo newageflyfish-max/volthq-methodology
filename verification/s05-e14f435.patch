@@ -1,0 +1,112 @@
+From e14f4351353154148c29501413c0e5e594d90dc2 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Fri, 15 May 2026 12:08:35 -0600
+Subject: [PATCH] =?UTF-8?q?methodology:=20=C2=A78.2=20anchor=20expansion?=
+ =?UTF-8?q?=20+=20=C2=A78.4=20VIPI-Best=20provider=20selection=20clarifica?=
+ =?UTF-8?q?tion?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Pre-base-date pre-registration revision per K4 amendment pattern (a255fff).
+§8.2: 3 anchors -> 12 (sub_index, value_kind) pairs; divisor extends to D_{I,k}.
+§8.4: VIPI-Best provider selection rule (per-constituent cheapest by §7.2 Step 4 blended price; single provider contributes input AND output).
+Closes Gap A + Gap B surfaced Day 75.
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md          | 46 +++++++++++++++++--
+ docs/vipi/working/section8_amendment_draft.md | 16 +++++++
+ 2 files changed, 59 insertions(+), 3 deletions(-)
+ create mode 100644 docs/vipi/working/section8_amendment_draft.md
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index 8e6065c..b89c38c 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -255,12 +255,50 @@ This is the standard divisor-adjustment method used by the S&P 500, Dow Jones In
+ 
+ ### 8.2. Base Value
+ 
+-- **VIPI base:** 100.00 on May 18, 2026, 16:00:00 UTC.
+-- **VIPI-Open base:** 100.00 on May 18, 2026, 16:00:00 UTC.
+-- **VIPI-Closed base:** 100.00 on May 18, 2026, 16:00:00 UTC.
++The twelve-series anchor structure establishes a common reference point across the full VIPI family, allowing direct comparison between blended, input-only, output-only, and best-available variants within and across the three sub-indices (VIPI, VIPI-Open, VIPI-Closed). Each series maintains an independent divisor under §8.1's mechanics while sharing the same base date and normalized starting value, ensuring that relative divergence between series reflects differences in observed pricing behavior rather than differences in initialization scale. This expansion supersedes the earlier three-anchor structure from commit c520214, which initialized only the headline blended series for each sub-index.
++
++**Base date and time.** May 18, 2026, 16:00:00 UTC. All twelve published VIPI series share this single base date and time, enabling direct relative comparison across the entire family.
++
++**Base values.** Each of the twelve published series (four value_kinds per §8.4, across the three sub-indices) is anchored to 100.00 at the base date:
++
++- VIPI: 100.00
++- VIPI-Input: 100.00
++- VIPI-Output: 100.00
++- VIPI-Best: 100.00
++- VIPI-Open: 100.00
++- VIPI-Open-Input: 100.00
++- VIPI-Open-Output: 100.00
++- VIPI-Open-Best: 100.00
++- VIPI-Closed: 100.00
++- VIPI-Closed-Input: 100.00
++- VIPI-Closed-Output: 100.00
++- VIPI-Closed-Best: 100.00
++
++**Divisor initialization.** §8.1's formula extends naturally to each (sub_index, value_kind) pair. For each such pair, the divisor is initialized at the base date such that the series equals 100.00:
++
++```
++D_{I,k}(base) = (Σ_{c in constituents} w_c × p_{c,k,base}) / 100
++```
++
++Where:
++
++- `I` ranges over the three sub-indices: `vipi`, `vipi_open`, `vipi_closed`
++- `k` ranges over the four published value_kinds per §8.4: `blended`, `input`, `output`, `best`
++- `w_c` is the constituent weight (1/N per §6, where N is the number of constituents in sub-index `I`)
++- `p_{c,k,base}` is the per-constituent base-date price for value_kind `k`:
++  - `blended`: blended_price per §7.2 Step 4 (3:1 input/output weighted)
++  - `input`: input_price per §7.2 Step 3 (median across mappings, input-token prices)
++  - `output`: output_price per §7.2 Step 3 (median across mappings, output-token prices)
++  - `best`: cheapest-provider blended_price per the §8.4 VIPI-Best definition (clarified below)
++
++Twelve divisors total. Each is persisted to the `vipi_daily.divisor` column on the base-date row for its (date, sub_index, value_kind) tuple.
++
++**Application of §8.1's constancy and rebalancing-continuity rules.** The rules stated in §8.1 — that the divisor remains constant between constituent changes, and that the divisor adjusts on every constituent change to preserve continuity — apply independently to each of the twelve (sub_index, value_kind) divisors. A rebalancing or emergency removal triggers twelve simultaneous divisor adjustments, one per series, each computed against its own series' prior value per §8.1's continuity formula.
+ 
+ The base date is selected such that all inaugural constituents have at least 14 calendar days of continuous observation history (per Section 5, criterion 4) on the base date and the outlier-exclusion rule (Section 7.3) has at least 7 days of trailing-median data from day one of publication. Volt's continuous pricing pipeline began on March 23, 2026; the base date is set with sufficient margin beyond that to satisfy both lookback requirements with operational headroom. All three sub-indices share the same base date to enable direct relative comparison across the family.
+ 
++The shared 100.00 anchor across all published series prioritizes interpretability of relative movement and spread relationships over time, particularly between median-based and best-available pricing views. Maintaining a uniform initialization framework across the family also ensures that subsequent divisor adjustments under §8.1 preserve continuity independently for each series without impairing cross-series readability.
++
+ ### 8.3. Inception and Historical Record
+ 
+ VIPI v0.1 has no backfilled historical period. Publication begins on the base date (May 18, 2026) using the live constituent set selected per Section 5 inclusion criteria as evaluated at the base date.
+@@ -281,6 +319,8 @@ Plus a secondary metric per sub-index:
+ 
+ - **VIPI-Best** — computed identically to VIPI but using the **cheapest provider per constituent** rather than the median. Useful as a "best-available" benchmark analogous to Platts' "most competitive grade" concept. Published alongside but not considered the headline number.
+ 
++**VIPI-Best provider selection (Day 75 clarification).** For each constituent on each observation day, the "cheapest provider" is determined by the lowest blended price for that constituent across all included provider mappings, where blended price is computed per §7.2 Step 4 (3:1 input-to-output weighted). The provider so identified contributes both its input price and its output price to the constituent's VIPI-Best calculation; provider selection is performed once per (constituent, day) tuple, not separately for input and output dimensions. This rule is defined at the constituent level to preserve methodological coherence with §8.4's "cheapest provider per constituent" formulation and to ensure that each constituent contribution corresponds to a real executable sourcing venue on the observation day. Selecting providers independently for input and output dimensions would instead construct a synthetic cross-provider composite that does not correspond to an actual sourcing path available on the observation day and is therefore not used in the VIPI-Best methodology.
++
+ ---
+ 
+ ## 9. Rebalancing
+diff --git a/docs/vipi/working/section8_amendment_draft.md b/docs/vipi/working/section8_amendment_draft.md
+new file mode 100644
+index 0000000..427b1d5
+--- /dev/null
++++ b/docs/vipi/working/section8_amendment_draft.md
+@@ -0,0 +1,16 @@
++# §8 Amendment Draft — Day 75 (May 15, 2026)
++# Status: locked prose, ready for Codex amendment prompt
++# Hostile review: PASSED (Claude Opus 4.7, May 15, 2026)
++# Updated: V2 §8.4 paragraph reflects operational mechanics + draft-voice lead-in
++
++## §8.2 opening paragraph
++
++The twelve-series anchor structure establishes a common reference point across the full VIPI family, allowing direct comparison between blended, input-only, output-only, and best-available variants within and across the three sub-indices (VIPI, VIPI-Open, VIPI-Closed). Each series maintains an independent divisor under §8.1's mechanics while sharing the same base date and normalized starting value, ensuring that relative divergence between series reflects differences in observed pricing behavior rather than differences in initialization scale. This expansion supersedes the earlier three-anchor structure from commit c520214, which initialized only the headline blended series for each sub-index.
++
++## §8.2 closing paragraph
++
++The shared 100.00 anchor across all published series prioritizes interpretability of relative movement and spread relationships over time, particularly between median-based and best-available pricing views. Maintaining a uniform initialization framework across the family also ensures that subsequent divisor adjustments under §8.1 preserve continuity independently for each series without impairing cross-series readability.
++
++## §8.4 rationale paragraph
++
++**VIPI-Best provider selection (Day 75 clarification).** For each constituent on each observation day, the "cheapest provider" is determined by the lowest blended price for that constituent across all included provider mappings, where blended price is computed per §7.2 Step 4 (3:1 input-to-output weighted). The provider so identified contributes both its input price and its output price to the constituent's VIPI-Best calculation; provider selection is performed once per (constituent, day) tuple, not separately for input and output dimensions. This rule is defined at the constituent level to preserve methodological coherence with §8.4's "cheapest provider per constituent" formulation and to ensure that each constituent contribution corresponds to a real executable sourcing venue on the observation day. Selecting providers independently for input and output dimensions would instead construct a synthetic cross-provider composite that does not correspond to an actual sourcing path available on the observation day and is therefore not used in the VIPI-Best methodology.
+-- 
+2.39.2 (Apple Git-143)
+

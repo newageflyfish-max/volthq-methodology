@@ -1,0 +1,34 @@
+From af88fb07ca584c3b89780367b0b403682adcdb03 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Fri, 15 May 2026 13:19:54 -0600
+Subject: [PATCH] =?UTF-8?q?methodology=20=C2=A710.4:=20flip=20audit=5Fjson?=
+ =?UTF-8?q?=20schema=20canonicity=20to=20methodology,=20not=20plan?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Pre-base-date pre-registration revision per K4 amendment pattern.
+Methodology §10.4 had deferred canonical schema to implementation plan §3.6,
+which is internal-not-for-publication. Methodology is the public binding
+contract; plan §3.6 should reference methodology, not the inverse.
+Closes L4 substantively (Day 75 prelaunch unknowns report).
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index b89c38c..37c1a46 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -384,7 +384,7 @@ And for academic use:
+ 
+ ### 10.4. Audit Record Schema
+ 
+-Each published VIPI value is accompanied by a daily audit record persisted to the `vipi_audit_records` D1 table (one row per (date, sub_index) pair). The canonical schema for the `audit_json` JSON blob is documented in the implementation plan §3.6 and reproduced here for methodology completeness. The schema is locked at v0.1.3 with the explicit additive-fields license: future minor revisions may add top-level keys without contract break.
++Each published VIPI value is accompanied by a daily audit record persisted to the `vipi_audit_records` D1 table (one row per (date, sub_index) pair). The canonical schema for the `audit_json` JSON blob is specified in this section; implementation plan §3.6 references this section as the binding contract and documents the operational details required for `audit.ts` to emit conformant records. The schema is locked at v0.1.3 with the explicit additive-fields license: future minor revisions may add top-level keys without contract break.
+ 
+ **Locked v0.1.3 keys (4 required + 1 conditional):**
+ 
+-- 
+2.39.2 (Apple Git-143)
+

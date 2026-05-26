@@ -1,0 +1,18 @@
+Amend disclosure attestation — commit d384b1fdea5f6d8969e3fb77c6edf90dd9802480
+
+Per Chain of Custody §5.3 of VIPI_v0.1.3_chain_of_custody.md, this commit was authored using `git commit --amend` locally before push to origin/main. The post-amend SHA — the one on origin/main, and the one this attestation references — is stable. The pre-amend SHA exists only in the Administrator's local Git reflog and is not present on any remote.
+
+This attestation captures the verbatim local-reflog output from 2026-05-21 documenting the amend event. The attestation is best-effort: it cannot be cryptographically verified against the remote because the pre-amend SHA never reached the remote. A skeptical reviewer may read this attestation as an unverifiable claim — the amend event itself cannot be re-derived from origin/main, and the reflog is local-only. The canonical reference, the post-amend SHA d384b1fdea5f6d8969e3fb77c6edf90dd9802480, is verifiable against origin/main; this attestation supplements that canonical verification with the best-effort reflog evidence the pre-amend state leaves behind.
+
+The amend events for `1cfc899` and `d384b1f` are disclosed in Chain of Custody §5.3 with the same scope and limits noted there. This attestation supplements the §5.3 disclosure with the underlying reflog evidence.
+
+---
+
+LOCAL REFLOG OUTPUT (captured 2026-05-21 from the Administrator's local Git reflog):
+
+d384b1f HEAD@{2026-05-16 10:37:01 -0600}: commit (amend): curation policy: codify silent-FALLBACK exclusion rule
+274d94b HEAD@{2026-05-16 10:34:17 -0600}: commit: curation policy: codify silent-FALLBACK exclusion rule
+
+---
+
+The Chain of Custody §11 documentation-errata protocol applies by extension to attestation files: any subsequent clarification or correction to this attestation is disclosed on the face of the reissued attestation per the same disclose-on-the-face pattern §11 establishes for the Chain of Custody itself.

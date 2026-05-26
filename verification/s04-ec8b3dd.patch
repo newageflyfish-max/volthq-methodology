@@ -1,0 +1,33 @@
+From ec8b3dd08a07cae8df25b15dc085408dc10f0109 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Tue, 12 May 2026 10:16:22 -0600
+Subject: [PATCH] =?UTF-8?q?vipi(methodology):=20add=20K=3D2=20observation-?=
+ =?UTF-8?q?count=20floor=20to=20=C2=A77.2?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+K=2 is the maximum achievable under VIPI's 5-min snapshot cadence + 10-min
+MOC window (15:55:00–16:04:59 UTC) — admits at most 2 cron firings per
+window. Day 70 verification confirmed K=3 mathematically unsatisfiable
+without infrastructure change. K≥3 deferred to v0.2 with 30-day review.
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index ee811ea..f69b578 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -176,6 +176,8 @@ For each constituent VCMI on each trading day:
+ 
+ **Step 3 — Compute per-mapping close price.** For each mapping, the close price is the median of its `priceInputPerMillion` (and separately, `priceOutputPerMillion`) values observed in the window. If only one observation is present, that value is used. If zero observations are present for a mapping in the window, that mapping is excluded from this day's calculation.
+ 
++**Observation-count floor.** For each included mapping, the MOC window must contain at least K = 2 clean observations (after Step 2's `quality_flag = 'clean'` filter and Section 7.3's outlier exclusion). If fewer than 2 clean observations remain for a mapping, that mapping is excluded from this day's calculation and the exclusion is logged in the daily audit record alongside the outlier_exclusions field. The K = 2 floor is the maximum achievable under VIPI's current 5-minute snapshot cadence and 10-minute MOC window (15:55:00 UTC – 16:04:59 UTC), which admits at most two cron firings per window. The floor is set deliberately low to maximize basket retention at v0.1; a higher floor (K ≥ 3) requires either a wider MOC window or a tighter cron cadence and is scheduled for review at v0.2 after 30 days of live publication.
++
+ **Step 4 — Compute per-constituent close price.** The constituent's daily close price is the **median across all included provider mappings**, computed separately for input and output. Formally:
+ 
+ - `input_price_{c,d}` = median over mappings of `input_price_{mapping,d}`
+-- 
+2.39.2 (Apple Git-143)
+

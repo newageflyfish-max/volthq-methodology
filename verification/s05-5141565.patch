@@ -1,0 +1,84 @@
+From 51415658a6aca6ab945ba3c3f3e764d9da482c40 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Sun, 17 May 2026 14:16:42 -0600
+Subject: [PATCH] pre-reg: L15 amendment-enumeration extension + new Sub-index
+ publication scope subsection
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Pre-base-date pre-registration revision per K4 amendment pattern.
+Closes V4 from Day 75 prelaunch unknowns report.
+
+Amendment A: L15 paragraph in 'Anchor and tamper-evidence' extended to enumerate
+Days 75–77 amendments alongside the existing Day 73 (May 14) carve-out:
+  - Day 75 (May 15): methodology §8.2, §8.4, §10.4; plan §3.6, §5.2
+  - Days 76–77 (May 16–17): methodology §11.3, curation policy silent-FALLBACK,
+    pre-reg sub-index publication scope subsection (this commit)
+Carve-out argument (pre-reg revisions, not §12.3 transitions, commit ordering
+as provenance proof) preserved verbatim from existing paragraph.
+
+Amendment B: New '### Sub-index publication scope' subsection inserted between
+existing Eligibility section (closing at the VCMI controlled-vocabulary
+paragraph) and existing Selection subsection. Ratifies Decision K2:
+
+  Paragraph 1: VIPI v0.1.3 publishes three sub-indices (VIPI, VIPI-Open,
+  VIPI-Closed) at May 18 base date; four value_kinds per sub-index (blended,
+  input, output, best); twelve published series anchored at 100.00 per
+  methodology §8.2; eighteen daily vipi_daily rows (the additional six
+  positions — best_input and best_output across three sub-indices — are
+  computed and persisted for v0.1.4 forward-compatibility but not exposed
+  in the v0.1.3 publication surface).
+
+  Paragraph 2: VIPI-Closed inaugural universe is six sole-issuer constituents
+  (five Anthropic + one OpenAI, each served by a single mapped provider);
+  VIPI-Closed blended and best series will be numerically identical at v0.1.3
+  because per-constituent blended price equals the sole provider's posted
+  price and the §8.4 cheapest-provider rule cannot identify a cheaper
+  alternative when only one provider serves the constituent; structural
+  identity is disclosed in each day's audit record via
+  evidentiary_sub_class_per_mapping = static_by_design per methodology §11.3.2.
+  Multi-provider observability for the closed-license tier is a v0.1.4-or-later
+  milestone, contingent on additional mappings to closed-license models served
+  by alternative providers. Paragraph-2 closing prose acknowledges the existing
+  pre-reg L33 subset-not-partition disclosure: VIPI includes the six
+  closed-license sole-issuer constituents alongside its open-license and other
+  §5-eligible constituents.
+
+Empirical basis: live D1 vcmi_provider_mappings query 2026-05-17 confirms six
+closed-license VCMIs (5 anthropic + 1 openai), each with mapping_count=1.
+Methodology §11.3.2 (commit 1cfc899) records the same distribution and
+classifies all six as static_by_design.
+---
+ docs/vipi/VIPI_v0.1.3_pre_registration.md | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_pre_registration.md b/docs/vipi/VIPI_v0.1.3_pre_registration.md
+index 7586f21..4fa0f5e 100644
+--- a/docs/vipi/VIPI_v0.1.3_pre_registration.md
++++ b/docs/vipi/VIPI_v0.1.3_pre_registration.md
+@@ -12,7 +12,7 @@ This document is committed to `origin/main` at commit `98ab34b8b3b87f49b5b2dd315
+ 
+ Subsequent edits to this pre-registration appear in `git log` against this file. Any change after the May 18, 2026 base date constitutes a methodology change and triggers a v0.1.4 release under methodology §12.3: announced 30 calendar days before effective date, 14-day consultation window, full rationale in the methodology changelog, prior versions at permanent URLs.
+ 
+-§5(3), §5(4), and §7.2 were amended on Day 73 and are designated—by this pre-registration revision and the corresponding methodology changelog entry—to take effect at the May 18 inaugural base date, meaning they function as pre-base-date edits rather than post-launch alterations, consistent with the pre-registration anchor clause that anticipates subsequent edits being visible through git history. §12.3 does not apply because its 30-day announcement and 14-day consultation regime governs changes to an already running and published index, whereas VIPI has not yet computed, published, or stabilized any value and therefore has no prior methodology version in force for these sub-indices to transition from. These amendments are therefore not §12.3 transitions but pre-registration revisions—rule finalizations made before basket selection, with git history serving as the ante-hoc record of intent and execution, and with the amendment commit landing prior to the 0009 basket commit. That commit ordering is the provenance proof that the rules were fixed before the basket existed, eliminating any credible "retroactive rule change" interpretation and situating the entire action squarely within the pre-registration design.
++§5(3), §5(4), and §7.2 were amended on Day 73 (May 14); methodology §8.2, §8.4, and §10.4, and implementation plan §3.6 and §5.2, were amended on Day 75 (May 15); methodology §11.3, the curation policy silent-FALLBACK exclusion section, and the sub-index publication scope subsection of this pre-registration were amended on Days 76 and 77 (May 16 and May 17). All such amendments are designated—by this pre-registration revision and the corresponding methodology changelog entry—to take effect at the May 18 inaugural base date, meaning they function as pre-base-date edits rather than post-launch alterations, consistent with the pre-registration anchor clause that anticipates subsequent edits being visible through git history. §12.3 does not apply because its 30-day announcement and 14-day consultation regime governs changes to an already running and published index, whereas VIPI has not yet computed, published, or stabilized any value and therefore has no prior methodology version in force for these sub-indices to transition from. These amendments are therefore not §12.3 transitions but pre-registration revisions—rule finalizations made before basket selection, with git history serving as the ante-hoc record of intent and execution, and with the amendment commits landing prior to the 0009 basket commit. That commit ordering is the provenance proof that the rules were fixed before the basket existed, eliminating any credible "retroactive rule change" interpretation and situating the entire action squarely within the pre-registration design.
+ 
+ ## What is locked as of commit c520214
+ 
+@@ -34,6 +34,12 @@ Methodology §5 excludes ineligible-license classifications (commercial-use-rest
+ 
+ Methodology §5 excludes models from families not yet in the VCMI controlled vocabulary until the vocabulary is updated.
+ 
++### Sub-index publication scope
++
++VIPI v0.1.3 publishes three sub-indices at the May 18, 2026 inaugural base date: **VIPI** (the cross-tier headline), **VIPI-Open** (the open-license subset), and **VIPI-Closed** (the closed-license subset). Each sub-index publishes four series at the base date — `blended`, `input`, `output`, and `best` (the cheapest-provider variant per methodology §8.4) — for a total of twelve published series anchored at 100.00 per the methodology §8.2 base-value structure. The data model writes eighteen daily rows per `vipi_daily` (three sub-indices × six `value_kind` enumerations); the additional six positions (`best_input` and `best_output` across the three sub-indices) are computed and persisted for v0.1.4 forward-compatibility but are not exposed in the v0.1.3 publication surface.
++
++The VIPI-Closed inaugural universe at base date consists of six sole-issuer constituents — five Anthropic models and one OpenAI model, each served by a single mapped provider — drawn from the Administrator's verified provider-mapping registry. The VIPI-Closed `blended` and `best` series will therefore be numerically identical at v0.1.3 because the §7.2 Step 4 blended price for each sole-issuer constituent equals the single mapped provider's posted price, and the §8.4 VIPI-Best provider-selection rule cannot identify a cheaper alternative when only one provider serves the constituent. This structural identity is disclosed in each day's audit record at §10.4 via the `evidentiary_sub_class_per_mapping` key, which classifies all six closed-license mappings as `static_by_design`. VIPI-Closed is published in this form at v0.1.3 as the closed-license tier as observable in the Administrator's verified provider universe at base date; expansion of the closed-license tier to multi-provider observability is a v0.1.4-or-later milestone, contingent on additional mappings to closed-license models served by alternative providers. The VIPI cross-tier headline series reflects the underlying basket composition at base date, which includes the six closed-license sole-issuer constituents enumerated above alongside its open-license and other §5-eligible constituents per the sub-index relationship described in this section. The VIPI-Open sub-index is unaffected by this disclosure as its constituent universe is multi-provider-observable at v0.1.3.
++
+ ### Selection
+ 
+ When more than 20 VCMIs qualify for a sub-index, the maintainer selects 20 using the tie-breaker cascade in methodology §6:
+-- 
+2.39.2 (Apple Git-143)
+

@@ -1,0 +1,71 @@
+From 9250b319c3282f7691fda9a6769dba845cff48ef Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Fri, 15 May 2026 13:42:26 -0600
+Subject: [PATCH] =?UTF-8?q?plan=20=C2=A73.6=20+=20=C2=A75.2:=20divisor=20b?=
+ =?UTF-8?q?ootstrap,=2012-divisor=20regime,=20VIPI-Best=20selection=20rule?=
+ =?UTF-8?q?,=20audit=20schema=20reference?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Closes L2, L3, L4 (operational), V2 from Day 75 prelaunch unknowns report.
+§3.6: JSON schema example replaced with reference to methodology §10.4 (now canonical per af88fb0).
+§5.2 step 10: base-date bootstrap branch + 12 divisors per (sub_index, value_kind).
+§5.2 step 14: single-provider-per-constituent VIPI-Best rule per methodology §8.4.
+§5.2 step 16: audit JSON references methodology §10.4 as canonical.
+---
+ docs/vipi/VIPI_implementation_plan.md | 25 ++++++-------------------
+ 1 file changed, 6 insertions(+), 19 deletions(-)
+
+diff --git a/docs/vipi/VIPI_implementation_plan.md b/docs/vipi/VIPI_implementation_plan.md
+index ed06581..fd9fa29 100644
+--- a/docs/vipi/VIPI_implementation_plan.md
++++ b/docs/vipi/VIPI_implementation_plan.md
+@@ -196,22 +196,7 @@ CREATE TABLE vipi_audit_records (
+ 
+ `audit_json` schema (locked at v0.1.3, expansion-ready for v0.1.4):
+ 
+-```json
+-{
+-  "constituents": ["vcmi:llama-3.3-70b/fp8", "vcmi:qwen-3-235b-a22b", ...],
+-  "mappings_used_per_constituent": {
+-    "vcmi:llama-3.3-70b/fp8": ["deepinfra", "together", "fireworks"],
+-    "vcmi:qwen-3-235b-a22b": ["hyperbolic", "together"]
+-  },
+-  "moc_window_observation_counts": {
+-    "vcmi:llama-3.3-70b/fp8": {"deepinfra": 3, "together": 3, "fireworks": 2},
+-    "vcmi:qwen-3-235b-a22b": {"hyperbolic": 3, "together": 3}
+-  },
+-  "outlier_exclusions": [
+-    {"vcmi": "vcmi:llama-3.3-70b/fp8", "provider_id": "fireworks", "snapshot_id": 12345, "price": 99.99, "reason": "exceeds_3x_trailing_median"}
+-  ]
+-}
+-```
++The canonical `audit_json` schema is specified in methodology §10.4. As of v0.1.3, the schema comprises 4 required keys, 1 conditional key, and 3 additive keys exercising the additive-fields license. See methodology §10.4 for the complete enumeration. The implementation responsibility under this plan is to emit a JSON object conforming to that schema; `audit.ts` (Session 5) constructs the object from the live compute pipeline outputs.
+ 
+ Four top-level keys, all matching §10.1's literal language. No nested structure beyond mappings and observation counts. v0.1.4 may add intra-window timestamps, per-mapping reliability scores, etc., as additive fields without contract break.
+ 
+@@ -285,15 +270,17 @@ For each scheduled run at 16:07 UTC (called with `date = today UTC`):
+ 9. If halted, write `vipi_daily` rows with `halted=1`, `halt_reason` populated, all metric columns NULL.
+ 
+ **Phase D: Apply §8 index calculation (when not halted)**
+-10. Fetch the divisor for this sub_index from the most recent `vipi_daily` row.
++10. Fetch the 12 divisors for this trading day per the per-(sub_index, value_kind) regime established by methodology §8.2:
++    - **Base-date case (date = 2026-05-18):** no prior `vipi_daily` rows exist. For each of the 12 (sub_index, value_kind) tuples — 3 sub-indices × {blended, input, output, best} — compute the divisor `D_{I,k}(base) = (Σ_c w_c × p_{c,k,base}) / 100` where `p_{c,k,base}` is the per-constituent base-date price for value_kind `k` per methodology §8.2. Persist the 12 computed divisors to `vipi_daily.divisor` keyed at `(2026-05-18, sub_index, value_kind)`.
++    - **Subsequent-day case (date > 2026-05-18):** for each of the 12 (sub_index, value_kind) tuples, `SELECT divisor FROM vipi_daily WHERE sub_index = ? AND value_kind = ? ORDER BY date DESC LIMIT 1`. Apply the rebalancing-continuity adjustment from methodology §8.1 only when a constituent change is in effect on the current trading day.
+ 11. Compute `weighted_sum = Σ (w_c × blended_price_c)` over constituents.
+ 12. Compute `value = weighted_sum / divisor`.
+ 13. Compute `value_input` and `value_output` analogously.
+-14. Compute `best_*` variants using the cheapest provider per constituent rather than the median.
++14. Compute `best_*` variants per methodology §8.4 single-provider-selection rule: for each constituent on the trading day, identify the provider with the lowest blended price (per §7.2 Step 4); that provider's input and output prices are both used in the constituent's `best_blended`, `best_input`, and `best_output` contributions. Provider selection is performed once per (constituent, day) tuple, not separately per value_kind dimension. (v0.1.3 publishes `best_blended` only — `best_input` and `best_output` rows are written to `vipi_daily` for v0.1.4 forward compat but not published.)
+ 
+ **Phase E: Persist**
+ 15. `INSERT OR REPLACE INTO vipi_daily` six rows per sub_index (three sub_indices × six value_kinds = 18 rows). Halted sub_indices contribute fewer rows.
+-16. Build the audit JSON per §3.6 schema and `INSERT OR REPLACE INTO vipi_audit_records`.
++16. Build the audit JSON per methodology §10.4 schema (the canonical contract; plan §3.6 references it) and `INSERT OR REPLACE INTO vipi_audit_records`.
+ 
+ **Phase F: Notify (deferred to v0.1.4)**
+ 17. v0.1.3: no notification. The feed worker reads the freshly-written rows on the next HTTP request.
+-- 
+2.39.2 (Apple Git-143)
+

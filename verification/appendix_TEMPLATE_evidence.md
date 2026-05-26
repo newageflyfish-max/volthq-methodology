@@ -1,0 +1,192 @@
+# VIPI v0.1.3 — Reproducibility Appendix (TEMPLATE)
+
+**Status:** TEMPLATE. This file's filename ends in `_TEMPLATE` precisely so that the operator-populated version — saved without the `_TEMPLATE` suffix at base date as `VIPI_v0.1.3_reproducibility_appendix.md` — is what gets committed alongside `0009_seed_vipi_basket_inaugural.sql` on May 18, 2026.
+
+**Placeholder convention:** every `{{POPULATE_MAY_18: …}}` token is a stub that the operator fills in during the May 18 morning publication pass, before the inaugural basket commit is pushed. The template is reviewable in this state (rules-already-on-disk + structure ready), but the verification chain is not closed until the placeholders resolve to live values.
+
+---
+
+## Purpose
+
+This appendix demonstrates that running the locked §5 eligibility query (with the §5(4) continuity sub-query) against the locked `vcmi_provider_mappings` rows seeded by `0008` + `0015` and the `vcmi_registry` rows seeded by `0007` + `0011` + `0012` + `0013`, evaluated as of the rebalancing reference date `2026-04-30` (last day of April per methodology §5 preamble), produces the constituent set seeded by `0009_seed_vipi_basket_inaugural.sql`.
+
+In other words: the appendix is the chain-of-custody proof that the rules pre-existed the basket. A reader holding this appendix + the locked pre-registration commit (`98ab34b…`) + the methodology version `vipi-0.1.3` can independently verify that the inaugural basket falls out of the locked rules.
+
+This deliverable discharges the commitments at:
+- `docs/vipi/VIPI_v0.1.3_pre_registration.md:165` — "A reproducibility appendix is published the same day as a separate document under `docs/vipi/`."
+- `docs/vipi/VIPI_v0.1.3_curation_policy.md:154` — "A reproducibility appendix … demonstrates basket reproducibility from the locked rules in this policy plus the locked mappings in the seed migration. The appendix is published before May 18."
+
+## Anchor
+
+**Methodology version:** `vipi-0.1.3`
+**Pre-registration anchor:** `98ab34b8b3b87f49b5b2dd315324688e40e93dc5` (per `docs/vipi/VIPI_v0.1.3_pre_registration.md:11`).
+**Pre-base-date amendment chain (per pre-reg L15, post-Cluster 4):**
+- Day 73 (May 14, 2026): methodology §§5(3), 5(4), 7.2 amendments — commit `a255fff`
+- Day 75 (May 15, 2026): methodology §§8.2, 8.4, 10.4 + plan §§3.6, 5.2 — commits `e14f435`, `af88fb0`, `9250b31`
+- Days 76 and 77 (May 16, May 17, 2026): methodology §11.3 + curation policy silent-FALLBACK + pre-reg Sub-index publication scope — commits `1cfc899`, `d384b1f`, `5141565`
+
+**Base date and time:** May 18, 2026, 16:00:00 UTC (per methodology §8.2 + pre-reg).
+**Inaugural-basket commit (filled at publication):** `{{POPULATE_MAY_18: paste 0009 commit hash here}}`
+**This appendix's own commit (filled at publication):** `{{POPULATE_MAY_18: paste appendix commit hash here}}`
+
+The pre-registration's commit-ordering proof requires the pre-base-date amendment commit chain (Day 73 → Day 77) to precede the inaugural-basket commit. Git log against `origin/main` will show that order with timestamps; the operator's published Substack issue must cite the relative commit timestamps verbatim.
+
+## Reproduction recipe
+
+### Step 1 — §5 eligibility query
+
+Source: `tools/queries/vipi_v0_1_3_eligibility_query.sql`. Substitute `:reference_date='2026-04-30'` and `:continuity_start='2026-04-17'` (14 days inclusive). Execute against remote D1 via:
+
+```bash
+cd ~/volthq/packages/workers/price-aggregator
+npx wrangler d1 execute volt-snapshots --remote --file ../../../tools/queries/vipi_v0_1_3_eligibility_query.sql
+```
+
+(Substitute the date placeholders inline before execution; D1's wrangler client does not bind named parameters across `--file`.)
+
+**Output rows (operator paste of actual remote D1 output):**
+
+```
+{{POPULATE_MAY_18: paste eligibility query output table — one row per
+(vcmi, candidate_sub_index) pair, with the eligibility_pass column populated.
+Expected row count: roughly 32 VIPI + 26 VIPI-Open + 6 VIPI-Closed candidates
+per the day77_0009_candidate_constituents.md upper-bound estimate, but the
+live continuity-pct filter may reduce this.}}
+```
+
+### Step 2 — §5(4) continuity check
+
+Source: `tools/queries/vipi_v0_1_3_continuity_query.sql`. Window: 2026-04-17 → 2026-04-30 inclusive (14 days ending at reference date per methodology §5(4) L115). Execute:
+
+```bash
+cd ~/volthq/packages/workers/price-aggregator
+npx wrangler d1 execute volt-snapshots --remote --file ../../../tools/queries/vipi_v0_1_3_continuity_query.sql
+```
+
+(Substitute `:start_date='2026-04-17'`, `:end_date='2026-04-30'`, `:vcmi_filter=NULL` inline.)
+
+**Output (operator paste of actual continuity numbers):**
+
+```
+{{POPULATE_MAY_18: paste continuity query output — one row per VCMI
+with total_eligible_closes, vcmi_observations, continuity_pct, pass_5_4_threshold.
+Highlight any VCMI marked FAIL_5_4; those drop out of the eligibility set
+regardless of Step 1 verdict.}}
+```
+
+**Administrator-side-outage overlay** (per §5(4) L117):
+- {{POPULATE_MAY_18: list any known Administrator-side-outage days within the 2026-04-17 → 2026-04-30 window AND for each, the affected VCMIs whose continuity_pct adjusts. If none: state "No Administrator-side outages identified in the inaugural continuity window."}}
+
+### Step 3 — Curator-decision pass
+
+Source: `~/Desktop/volt-session-logs/day77_0009_candidate_constituents.md`. The operator-review section enumerates REQUIRES_DECISION items.
+
+**Resolutions (operator's curator decisions, with rationale):**
+
+- **D-1 (late-added VCMI continuity treatment):**
+  {{POPULATE_MAY_18: state the chosen option (D-1.A all-window, D-1.B post-effective_from only, OR D-1.C defer to July rebalancing) and per-VCMI consequence. Cite methodology section supporting the chosen option.}}
+- **D-2 (cap application + tie-breaker cascade):**
+  {{POPULATE_MAY_18: confirm cap was applied mechanically per methodology §6 L141-146; if any sub_index produced more than N=20 candidates, list which VCMIs were dropped at which tie-breaker step.}}
+- **D-3 (sole-issuer semantic verification):**
+  {{POPULATE_MAY_18: paste the verification query output showing the 6 VIPI-Closed VCMIs each mapped to their issuer-of-record provider, all confidence='high'.}}
+- **D-4 silent-FALLBACK cross-check** (per curation policy d384b1f):
+  {{POPULATE_MAY_18: paste output of `tools/coverage_check.py --registry-state 0015 --verbose` showing which (provider, VCMI) pairs were omitted under the silent-FALLBACK rule. Confirm none of the eligibility-pass VCMIs has any of its mappings omitted in a way that drops the constituent below the §5(3) provider-coverage threshold.}}
+
+### Step 4 — 0009 basket-seed migration
+
+**File:** `packages/workers/vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql`
+
+**Commit:** {{POPULATE_MAY_18: paste 0009 commit hash}}
+
+**SQL VALUES section (verbatim from the committed migration):**
+
+```sql
+{{POPULATE_MAY_18: paste the INSERT INTO vipi_basket VALUES (...) section
+from 0009. Each VALUES row carries:
+  ('2026-05-18',           -- effective_from
+   NULL,                   -- effective_to
+   'vipi' | 'vipi_open' | 'vipi_closed',   -- sub_index
+   'vcmi:...',             -- vcmi
+   <1/N as REAL>,          -- weight (e.g. 0.05 for N=20)
+   'inaugural',            -- added_reason
+   NULL,                   -- rebalance_announcement_url (no prior rebalance)
+   '<one-line citation rationale>'   -- notes (per curation_policy:106)
+  )
+
+Expected row count: matches Step 1 + Step 2 ELIGIBLE VCMIs per sub_index,
+capped at N=20.}}
+```
+
+### Step 5 — Apply to remote D1
+
+```bash
+cd ~/volthq/packages/workers/price-aggregator
+npx wrangler d1 execute volt-snapshots --remote --file ../vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql
+```
+
+**Output:** {{POPULATE_MAY_18: paste wrangler d1 execute output showing
+rows_written count and zero errors. Confirm:
+  SELECT COUNT(*) FROM vipi_basket WHERE effective_from='2026-05-18'
+returns the expected row count (VIPI + VIPI-Open + VIPI-Closed constituent
+totals).}}
+
+## Verification: rule-then-basket chain
+
+The pre-registration's central defense (`pre_registration.md:7-15`) is that the maintainer publishes the rules first and then publishes the basket against them. The commit-ordering chain on `origin/main` is the provenance proof:
+
+1. **Pre-registration anchor:** `98ab34b…` (April 27, 2026; commit timestamp predates any cluster-amendment commit).
+2. **Pre-base-date methodology amendment chain (Days 73 → 77):** commits `a255fff`, `e14f435`, `af88fb0`, `9250b31`, `1cfc899`, `d384b1f`, `5141565`. All land BEFORE the inaugural-basket commit. Each was explicitly designated per pre-reg L15 (post-Cluster 4) as a pre-base-date pre-registration revision — NOT a §12.3 transition.
+3. **Inaugural-basket commit:** `{{POPULATE_MAY_18: 0009 commit hash}}` (May 18, 2026; commit timestamp post-dates the cluster-amendment chain).
+4. **This appendix commit:** `{{POPULATE_MAY_18: appendix commit hash}}` (May 18, 2026; commit timestamp matches or post-dates 0009).
+5. **First published VIPI values:** 12 vipi_daily rows + 3 vipi_audit_records rows, written by the first 16:07 UTC cron firing on May 18.
+
+Any reader can reconstruct the chain by:
+
+```bash
+git clone https://github.com/newageflyfish-max/volthq.git       # NOTE: repo currently
+                                                                  # private; if it becomes
+                                                                  # public per the launch
+                                                                  # plan, this command works.
+                                                                  # Otherwise the commits
+                                                                  # are visible to anyone
+                                                                  # with read access.
+cd volthq
+git log --oneline -- docs/vipi/VIPI_v0.1.3_methodology.md \
+                     docs/vipi/VIPI_v0.1.3_pre_registration.md \
+                     docs/vipi/VIPI_v0.1.3_curation_policy.md \
+                     docs/vipi/VIPI_implementation_plan.md
+# Verify all amendment commits dated 2026-05-14 through 2026-05-17,
+# preceding any commit dated 2026-05-18.
+```
+
+A reviewer who confirms (i) the listed commits exist on `origin/main`, (ii) their dates fall before the inaugural-basket commit's date, and (iii) the eligibility + continuity queries against the post-migration `volt-snapshots` D1 reproduce the basket in `0009`, has independently verified the rule-then-basket chain.
+
+## Verification: numeric reconciliation
+
+For each constituent in `0009`, the operator must be able to point to a specific eligibility-query row and a continuity-query row whose verdicts justify inclusion. Reverse: for each ELIGIBLE candidate NOT in `0009`, the operator must be able to cite either (a) cap-application tie-breaker exclusion per methodology §6, or (b) curator-discretion exclusion under a named retention-bias / silent-FALLBACK / sole-issuer ruling.
+
+**Reconciliation table** (operator populates):
+
+| sub_index | candidates_eligible | constituents_in_0009 | dropped | drop_reason |
+|---|---|---|---|---|
+| vipi          | {{POPULATE_MAY_18}} | {{POPULATE_MAY_18}} | {{POPULATE_MAY_18}} | {{POPULATE_MAY_18 — cite §6 tie-breaker or operator decision per row}} |
+| vipi_open     | {{POPULATE_MAY_18}} | {{POPULATE_MAY_18}} | {{POPULATE_MAY_18}} | {{POPULATE_MAY_18}} |
+| vipi_closed   | 6                   | 6                   | 0       | All 6 sole-issuer constituents qualify; pre-reg Sub-index publication scope L40 explicitly ratifies (5 Anthropic + 1 OpenAI). |
+
+## Out-of-appendix items
+
+- **Reasoning models:** methodology §5(5) excludes any VCMI whose variant string contains 'reasoning' OR is curator-categorized as reasoning. None of the 40 active VCMIs match the variant-string clause; operator manual-categorization at curation time (per curation policy L112-120) is documented in each VCMI's registry-row `notes` field. This appendix does not re-litigate categorization.
+- **VIPI-Reasoning:** out of scope for v0.1.3 per methodology §4 L96 + §15 L539. Planned for v0.2 (within 60 days post-launch).
+- **VIPI-Best multi-provider observability expansion for VIPI-Closed:** per pre-reg Sub-index publication scope L42, v0.1.4-or-later milestone.
+
+## Signoff
+
+Operator (Administrator) signature: Jack Arnot, Volt HQ.
+Date of populating this appendix from template: {{POPULATE_MAY_18}}.
+Commit hash at sign-off: {{POPULATE_MAY_18}}.
+
+The methodology, plan, curation policy, pre-registration, and migrations cited here are at the commit indicated above. Subsequent edits to these files after the sign-off date constitute methodology changes under §12.3 and require the 30-day-announcement + 14-day-consultation regime.
+
+---
+
+*This appendix is published under CC-BY-4.0 alongside the methodology document. Citation format follows methodology §10.3.*

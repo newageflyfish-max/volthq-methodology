@@ -1,0 +1,82 @@
+From 1cfc8997903a500a5ea6293ff54f6903a178eafe Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Sat, 16 May 2026 10:11:52 -0600
+Subject: [PATCH] =?UTF-8?q?methodology=20=C2=A711.3:=20publish=20inaugural?=
+ =?UTF-8?q?=20source=20classification=20rule=20+=20IOSCO=20P8=20publicatio?=
+ =?UTF-8?q?n=20mix?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Pre-base-date pre-registration revision per K4 amendment pattern.
+Closes L5 from Day 75 prelaunch unknowns report.
+
+§11.3.1: evidentiary_tier and evidentiary_sub_class are independent dimensions.
+§11.3.2: 73-mapping classification table (44 api_inline_price, 23 api_catalog_gated, 6 static_by_design, 0 gpu_hour_derived).
+§11.3.3: per-class rationale for the four enum values.
+§11.3.4: publication mix 60.3% / 31.5% / 8.2% / 0% mapped to IOSCO P8 input tiers {0, 0, 100}.
+§11.3.5: empirical anchor in adapter source at packages/workers/price-aggregator/src/adapters/.
+
+Empirical basis: live vcmi_provider_mappings 73-row distribution as of base date.
+Together api_inline_price classification empirically confirmed via live API curl May 15, 2026.
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md | 43 ++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index 37c1a46..eeb75dc 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -432,6 +432,49 @@ Changes to this register are disclosed within 10 business days of arising.
+ 
+ The Administrator publishes — and maintains in the methodology changelog — the classification logic that assigns every provider mapping an `evidentiary_tier` value (one of `live_api` or `pricing_page_snapshot`) and a per-mapping evidentiary sub-class (`api_inline_price`, `api_catalog_gated`, `static_by_design`, or `gpu_hour_derived`) exposed in each day's audit record at §10.4. Mappings omitted under the curation policy's silent-FALLBACK rule are disclosed in the daily audit record via the `silent_fallback_exclusions` key; Akash GPU-hour-derived offerings are excluded under the curation policy's eligibility rules. The classification policy is reviewed annually alongside the methodology. This commitment operationalizes IOSCO Principle 8 (Hierarchy of Inputs) and adopts the BMR Article 27 disclosure framework as a design reference, not as a regulatory claim of EU benchmark status.
+ 
++#### 11.3.1. Independent dimensions of source classification
++
++The `evidentiary_tier` and `evidentiary_sub_class` classifications operate as independent dimensions of source classification rather than as a single derived hierarchy. The `evidentiary_tier` classification identifies how the Administrator's pipeline obtains a price observation on a given day (`live_api` or `pricing_page_snapshot`); the `evidentiary_sub_class` classification identifies the price-publication mechanism at the provider for that observation (`api_inline_price`, `api_catalog_gated`, `static_by_design`, or `gpu_hour_derived`). Any pairing of values across the two classifications permitted by the underlying adapter mechanics is a legitimate published combination; the two values are reported jointly per mapping rather than collapsed into a single composite class.
++
++#### 11.3.2. Inaugural-basket classification (73 mappings as of base date)
++
++| Provider | Mappings | `evidentiary_sub_class` | Empirical basis |
++|---|---|---|---|
++| DeepInfra | 23 | `api_inline_price` | API returns `pricing.cents_per_input_token` and `pricing.cents_per_output_token` inline in the live model record |
++| Together | 21 | `api_inline_price` | API returns `pricing.input` and `pricing.output` inline in the live model record (empirically confirmed via live API curl on May 15, 2026) |
++| Cerebras | 2 | `api_catalog_gated` | Live API returns model identifiers only; per-token prices resolved against Administrator-maintained `PRICING_MAP` |
++| Fireworks | 3 | `api_catalog_gated` | Same retrieval pattern as Cerebras |
++| Groq | 6 | `api_catalog_gated` | Same retrieval pattern as Cerebras |
++| Hyperbolic | 12 | `api_catalog_gated` | Same retrieval pattern as Cerebras |
++| Anthropic | 5 | `static_by_design` | No HTTP retrieval during daily computation; prices stored as source-file literals |
++| OpenAI | 1 | `static_by_design` | Same retrieval pattern as Anthropic |
++| **Total** | **73** | — | — |
++
++#### 11.3.3. Per-class rationale
++
++The `api_inline_price` class covers mappings where the provider exposes token pricing directly inside the live model metadata returned by the serving API. For these mappings, the Administrator's adapter reads the per-token price field directly from the provider response at retrieval time. This class includes 44 mappings across the DeepInfra and Together providers.
++
++The `api_catalog_gated` class covers mappings where the provider API exposes model identifiers through a live catalog endpoint but does not return token pricing in the response payload itself. For these mappings, the Administrator maintains a provider-specific `PRICING_MAP` populated from the provider's publicly published pricing page and joined against the live model catalog during retrieval. This class includes 23 mappings across Cerebras, Fireworks, Groq, and Hyperbolic.
++
++The `static_by_design` class covers mappings where the Administrator does not perform a live HTTP pricing retrieval request against the provider during the daily computation process. Instead, the applicable token prices are stored as source-file literals and revised manually when the provider's published pricing schedule changes. This class includes 6 mappings across Anthropic and OpenAI.
++
++The `gpu_hour_derived` class covers mappings where the provider publishes GPU-hour infrastructure pricing rather than direct token pricing. For these mappings, the Administrator's adapter derives a per-token estimate using a fixed throughput constant applied to the published GPU-hour rate. Per Curation Policy §5(6), all Akash mappings are excluded from the eligibility universe. The sub-class remains enumerated for disclosure completeness.
++
++#### 11.3.4. Publication mix and IOSCO Principle 8 mapping
++
++The aggregate publication mix across the 73 inaugural mappings, exposed per-day in the audit record via the `evidentiary_sub_class_publication_mix` key defined at §10.4, is:
++
++- 44/73 = 60.3% `api_inline_price`
++- 23/73 = 31.5% `api_catalog_gated`
++- 6/73 = 8.2% `static_by_design`
++- 0/73 = 0% `gpu_hour_derived`
++
++Mapped to the IOSCO Principle 8 input tiers per the audit-record disclosure at §10.4, this publication mix resolves to `{transaction_based: 0, spread_based: 0, interpolated_extrapolated: 100}`. All Administrator-included observations are posted-rate inputs and therefore classify under the interpolated/extrapolated tier of IOSCO Principle 8's hierarchy of inputs.
++
++#### 11.3.5. Empirical basis
++
++The 73-mapping classification recorded above corresponds to the inaugural distribution of `vcmi_provider_mappings` records in the `volt-snapshots` database as of base date. The per-class assignment for each provider is grounded in the Administrator's adapter source code, with the price-retrieval mechanism for each included provider summarized in the §11.3.2 table's "Empirical basis" column.
++
+ ### 11.4. Oversight (Public Phase)
+ 
+ For the public phase (v1.0 and later), the Administrator commits to establishing a **VIPI Advisory Group** of 3–5 external members drawn from:
+-- 
+2.39.2 (Apple Git-143)
+

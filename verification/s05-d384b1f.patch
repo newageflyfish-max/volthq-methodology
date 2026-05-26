@@ -1,0 +1,67 @@
+From d384b1fdea5f6d8969e3fb77c6edf90dd9802480 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Sat, 16 May 2026 10:34:17 -0600
+Subject: [PATCH] curation policy: codify silent-FALLBACK exclusion rule
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Pre-base-date pre-registration revision per K4 amendment pattern.
+Closes V1 from Day 75 prelaunch unknowns report.
+
+New peer section 'Silent-FALLBACK exclusion (locked)' between §5(6) eligibility
+rulings and Confidence-level policy. Three subsections:
+
+Rule: provider mappings appearing in static FALLBACK_MODELS arrays of catalog-gated
+adapters (cerebras, fireworks, groq, hyperbolic) without live-catalog confirmation
+are excluded from the inaugural eligibility universe. Rule scopes to catalog-gated
+adapters only; static-by-design and api_inline_price adapter classes are out of
+scope.
+
+Operationalization: omission applied at worksheet-generation layer via
+tools/coverage_check.py --registry-state 0013 --verbose; rebalancing-cadence
+re-verification with exit-from-FALLBACK_MODELS pathway to re-eligibility.
+
+Disclosure: per-day exclusions published in vipi_audit_records.audit_json.silent_fallback_exclusions,
+parallel to outlier_exclusions shape per methodology §10.4. Methodology §11.3
+already references this disclosure key.
+
+Operational anchor: migration 0008 header L84-L91 documents the rule application
+at Day 73 coverage_check run; this commit codifies that operational anchor as
+locked curation policy.
+---
+ docs/vipi/VIPI_v0.1.3_curation_policy.md | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_curation_policy.md b/docs/vipi/VIPI_v0.1.3_curation_policy.md
+index 7d56dd8..1c94867 100644
+--- a/docs/vipi/VIPI_v0.1.3_curation_policy.md
++++ b/docs/vipi/VIPI_v0.1.3_curation_policy.md
+@@ -49,6 +49,24 @@ The Day 55 damage assessment confirmed each adapter rate matches the cited prima
+ 
+ ---
+ 
++## Silent-FALLBACK exclusion (locked)
++
++### Rule
++
++A provider mapping is excluded from the inaugural eligibility universe if its `provider_model_id` appears in the static `FALLBACK_MODELS` array of a catalog-gated adapter (`cerebras.ts`, `fireworks.ts`, `groq.ts`, `hyperbolic.ts`) AND is not independently confirmed via that adapter's live model-catalog endpoint at curation time.
++
++The rule applies to catalog-gated adapters only. Static-by-design adapters (`anthropic.ts`, `openai.ts`) emit a single hardcoded model list with no live-fetch path and are governed by §6 confidence rules rather than the silent-FALLBACK exclusion. The `api_inline_price` adapters (`deepinfra.ts`, `together.ts`) source prices directly from live API responses and have no comparable silent-FALLBACK pathway.
++
++### Operationalization
++
++Silent-FALLBACK omission is applied at the worksheet-generation layer during inaugural basket construction rather than through a query-time SQL exclusion filter. The Administrator operationalizes the rule through `tools/coverage_check.py --registry-state 0013 --verbose`, which decodes the curator worksheet against the current adapter source and omits mappings whose `provider_model_id` remains confined to a catalog-gated adapter's static `FALLBACK_MODELS` array without live catalog confirmation. Each scheduled rebalancing re-runs the same coverage-check process against the then-current adapter state, allowing mappings that subsequently appear in the provider's live catalog response to re-enter the eligibility universe at the next reconstitution event.
++
++### Disclosure
++
++Per-day silent-FALLBACK exclusions are disclosed in the daily audit record under `vipi_audit_records.audit_json.silent_fallback_exclusions`, parallel in shape to the `outlier_exclusions` key defined at methodology §10.4. Methodology §11.3 references this disclosure as the per-determination publication mechanism for silent-FALLBACK exclusion events.
++
++---
++
+ ## Confidence-level policy (locked)
+ 
+ VCMI v0.1.3 §6 defines `high`, `medium`, and `low` confidence and lists four sufficient grounds for `high`: (a) identical upstream source URL declared by the provider, (b) byte-level weight verification, (c) direct written confirmation, or (d) trivial decomposition of the provider's model string into VCMI components with documented brand-suffix meaning. The maintainer applies the rules below to assign confidence at the time of seed.
+-- 
+2.39.2 (Apple Git-143)
+

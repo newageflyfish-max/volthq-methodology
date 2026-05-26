@@ -1,0 +1,235 @@
+From a255fff098ca77f61ab90bd1ba6a8ab988fff1a6 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Thu, 14 May 2026 14:38:52 -0600
+Subject: [PATCH] =?UTF-8?q?docs(vipi):=20amend=20=C2=A75(3),=20=C2=A75(4),?=
+ =?UTF-8?q?=20=C2=A77.2=20for=20K4=20sole-issuer=20pathway;=20sync=20pre-r?=
+ =?UTF-8?q?eg?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Methodology: §5(3) split into clause (a) multi-provider / (b) sole-issuer
+proprietary; §5(4) continuity redefined against clean-snapshot MOC closes;
+§7.2 sole-issuer constituent handling added. Pre-reg: Eligibility criteria
+3 & 4 restated, threshold table synced, methodology line-number citations
+converted to section refs, Amendment 4 (pre-registration-revision vs
+§12.3-transition argument) added to anchor, Verification commitment updated
+(0008 already committed Day 73).
+
+Pre-base-date pre-registration revision per the anchor clause. Must land
+before 0009.
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md      | 20 ++++++-
+ docs/vipi/VIPI_v0.1.3_pre_registration.md | 69 +++++++++++------------
+ 2 files changed, 52 insertions(+), 37 deletions(-)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index bb6abfc..8e6065c 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -105,8 +105,18 @@ A VCMI is eligible for inclusion in a VIPI sub-index at a monthly rebalancing da
+ 
+ 1. **Active status.** The VCMI has `status = active` in the VCMI registry.
+ 2. **Identity confidence.** The VCMI's upstream source URL is verified (`high` confidence on upstream author).
+-3. **Provider coverage.** The VCMI has at least two `provider_mappings` with `confidence = high` or `confidence = medium`. At least one mapping must be `confidence = high`. Confidence levels (`high`, `medium`, `low`) are defined in VCMI v0.1.3 Section 6. In summary: `high` requires either identical upstream source URL confirmation, byte-level weight verification, direct provider confirmation, or trivial decomposition of the provider string into VCMI components with documented brand-suffix meaning.
+-4. **Continuity.** The VCMI has been continuously observed in the pricing feed for at least 14 consecutive days ending on the rebalancing reference date. "Continuously" means present in at least 95% of the daily 16:00 UTC close snapshots during the 14-day window, allowing for provider API outages.
++3. **Provider coverage.** Criterion 3 establishes requirements to ensure that each recorded price is verifiably associated with the same underlying model it claims to price, with the specific verification mechanism depending on whether the model is served by multiple providers or solely by its issuer of record.
++
++   **(a) For models served by multiple providers:** the VCMI must include at least two provider mappings with confidence = high or confidence = medium, with at least one mapping required to have confidence = high. This requirement implements cross-provider corroboration by relying on independent provider observations of the same underlying model, where agreement across providers provides evidence that the recorded price is not an artifact of any single provider's data or reporting process, but is consistently associated with the model across sources. Confidence levels (`high`, `medium`, `low`) are defined in VCMI v0.1.3 Section 6. In summary: `high` requires either identical upstream source URL confirmation, byte-level weight verification, direct provider confirmation, or trivial decomposition of the provider string into VCMI components with documented brand-suffix meaning.
++
++   **(b) For sole-issuer proprietary models:** Some proprietary models are offered only by their issuer of record; for these models, the cross-provider corroboration requirement in clause (a) cannot be performed because no independent second provider exists against which to compare pricing. Instead, Criterion 3 is satisfied through a single-provider pathway requiring a verified-identity, high-confidence mapping to the issuer of record and the use of issuer-published pricing for the corresponding model. In this sole-issuer context, issuer-published pricing functions as the canonical reference price by construction, and the framework validates the consistency of published pricing tied to verified model identity, not whether that price is economically fair, efficient, or competitive. This pathway is contingent on identity continuity under Criterion 2, such that the mapped model must remain the same identifiable model over time, preventing silent substitution or rolling re-identification under a stable pricing label.
++
++   This amendment resolves the sole-issuer portion of Open Question 4 by specifying that proprietary models available only from their issuer of record use issuer-published pricing under clause (b), while the multi-reseller case addressed in Open Question 4 remains deferred for v0.2.
++4. **Continuity.** The VCMI has been continuously observed in the pricing feed for at least 14 consecutive days ending on the rebalancing reference date. "Continuously" means present in at least 95% of the daily 16:00 UTC close snapshots during the 14-day window.
++
++   The 95% threshold is measured against the number of MOC closes for which the pricing feed produced at least one clean snapshot, rather than against the number of calendar days within the evaluation window. If no snapshot was produced on a given day, that day is excluded from both the numerator and denominator. This includes both days within the window that had not yet elapsed at the time eligibility was evaluated and Administrator-side infrastructure outages. Provider-side absences are treated differently: if the feed operated as expected but a provider failed to return the model, that day is counted as a missed observation in the numerator calculation.
++
++   Any rebalancing in which Administrator-side gaps reduced the denominator must disclose this in the rebalancing announcement, including both the number of affected days and the specific dates involved. Mechanical safeguards preventing denominator erosion resulting from Administrator-side gaps are deferred until v0.1.4.
+ 5. **Non-reasoning.** The VCMI is not a reasoning-specialized model (identified by `variant` containing `reasoning`, or by explicit categorization in the VCMI notes field). Reasoning models are routed to VIPI-Reasoning when that index launches.
+ 6. **Non-opaque pricing.** The VCMI's pricing is expressed in per-input-token and per-output-token terms (not per-GPU-hour, not subscription, not freemium). This excludes `pricePerGpuHour`-only offerings and subscription tiers.
+ 7. **Sub-index specific criteria:**
+@@ -174,6 +184,12 @@ For each constituent VCMI on each trading day:
+ 
+ **Step 1 — Collect all provider mappings.** Retrieve all `provider_mappings` with `confidence = high` for this VCMI. If fewer than two `high`-confidence mappings exist, fall back to including `confidence = medium` mappings for price determination (but note the degradation in the daily calculation audit trail).
+ 
++**Sole-issuer constituents.** A constituent included under §5(3)(b) (sole-issuer proprietary models) will, by construction, have exactly one high-confidence provider mapping, reflecting the fact that no independent secondary provider exists for that model. In this case, Step 1 does not enter a degraded or fallback state; instead, the single available high-confidence mapping constitutes the complete input set for price determination.
++
++The median operation applied to a one-element set returns that element directly, and this behavior is intended under §5(3)(b) rather than representing a reduction in data quality or provider coverage.
++
++This sole-issuer handling is distinct from the fallback path described in Step 1 for cases with fewer than two high-confidence mappings, where medium-confidence mappings are introduced and a degradation is explicitly recorded in the audit trail. The sole-issuer case does not trigger degradation labeling, as it reflects structural uniqueness of the model's provider landscape rather than incomplete or missing provider coverage.
++
+ **Escalation for sustained fallback.** If a constituent operates on medium-confidence-only pricing (zero high-confidence mappings with observations in the MOC window) for more than 5 consecutive trading days, the Administrator evaluates whether the high-confidence mapping loss is transient (e.g., provider API outage) or structural (e.g., provider delisted the model). If structural, the constituent is flagged for potential emergency removal under Section 9.3. The evaluation is disclosed in the daily audit record on the day the escalation criterion is met and on each subsequent day the constituent remains in medium-only status.
+ 
+ **Step 2 — Collect prices in the MOC window.** For each included mapping, retrieve all `offering_prices` rows with `quality_flag = 'clean'` where `timestamp >= 15:55:00 UTC` and `timestamp < 16:05:00 UTC` on the trading day. Note: VIPI uses each provider's published standard-tier, non-cached, non-batched pricing. Effective prices paid by users may differ due to caching discounts, batch-API pricing, volume commitments, and negotiated enterprise rates. See Section 15 for the rationale for this choice.
+diff --git a/docs/vipi/VIPI_v0.1.3_pre_registration.md b/docs/vipi/VIPI_v0.1.3_pre_registration.md
+index 77d9304..7586f21 100644
+--- a/docs/vipi/VIPI_v0.1.3_pre_registration.md
++++ b/docs/vipi/VIPI_v0.1.3_pre_registration.md
+@@ -10,31 +10,33 @@ The model is academic preregistration (the AsPredicted / OSF convention), clinic
+ 
+ This document is committed to `origin/main` at commit `98ab34b8b3b87f49b5b2dd315324688e40e93dc5`. The methodology, plan, and migrations referenced here are at parent commit `c520214daf082c09868b08916d1b7f422770603a` ("Plan §3.6: add confidence_fallback_constituents audit key per §7.2 Step 1"), 2026-04-27.
+ 
+-Subsequent edits to this pre-registration appear in `git log` against this file. Any change after the May 18, 2026 base date constitutes a methodology change and triggers a v0.1.4 release under methodology §12.3 (lines 396–402): announced 30 calendar days before effective date, 14-day consultation window, full rationale in the methodology changelog, prior versions at permanent URLs.
++Subsequent edits to this pre-registration appear in `git log` against this file. Any change after the May 18, 2026 base date constitutes a methodology change and triggers a v0.1.4 release under methodology §12.3: announced 30 calendar days before effective date, 14-day consultation window, full rationale in the methodology changelog, prior versions at permanent URLs.
++
++§5(3), §5(4), and §7.2 were amended on Day 73 and are designated—by this pre-registration revision and the corresponding methodology changelog entry—to take effect at the May 18 inaugural base date, meaning they function as pre-base-date edits rather than post-launch alterations, consistent with the pre-registration anchor clause that anticipates subsequent edits being visible through git history. §12.3 does not apply because its 30-day announcement and 14-day consultation regime governs changes to an already running and published index, whereas VIPI has not yet computed, published, or stabilized any value and therefore has no prior methodology version in force for these sub-indices to transition from. These amendments are therefore not §12.3 transitions but pre-registration revisions—rule finalizations made before basket selection, with git history serving as the ante-hoc record of intent and execution, and with the amendment commit landing prior to the 0009 basket commit. That commit ordering is the provenance proof that the rules were fixed before the basket existed, eliminating any credible "retroactive rule change" interpretation and situating the entire action squarely within the pre-registration design.
+ 
+ ## What is locked as of commit c520214
+ 
+ ### Eligibility
+ 
+-A VCMI is eligible for inclusion in a VIPI sub-index at a monthly rebalancing date if all seven criteria in methodology §5 (lines 100–122) are met at the rebalancing reference date (the last calendar day of the prior month, 16:00 UTC):
++A VCMI is eligible for inclusion in a VIPI sub-index at a monthly rebalancing date if all seven criteria in methodology §5 are met at the rebalancing reference date (the last calendar day of the prior month, 16:00 UTC):
+ 
+ 1. `status = active` in the VCMI registry.
+ 2. Upstream source URL verified at `high` confidence on upstream author.
+-3. At least two `provider_mappings` with `confidence ∈ {high, medium}`, of which at least one is `high`. Confidence levels per VCMI v0.1.3 §6 (lines 186–213).
+-4. Continuous observation for 14 consecutive days ending on the reference date, defined as presence in at least 95% of daily 16:00 UTC close snapshots.
++3. Provider coverage, per methodology §5(3), requires that for models served by multiple providers there must be at least two `provider_mappings` with confidence levels of high or medium, including at least one high-confidence mapping, whereas for sole-issuer proprietary models a single verified high-confidence mapping to the issuer of record is sufficient when paired with issuer-published pricing; this latter case replaces the multi-provider corroboration requirement rather than relaxing it.
++4. Continuity, per methodology §5(4), requires observation in at least 95% of the daily 16:00 UTC MOC closes for which a valid pricing snapshot exists, with not-yet-elapsed days and Administrator-side outages excluded from both the numerator and denominator, while provider-side absences are counted as missed observations in the numerator, and any Administrator-side adjustments are disclosed in the rebalancing announcement.
+ 5. Not a reasoning-specialized model (variant string contains `reasoning` or VCMI notes field categorizes as reasoning).
+ 6. Pricing expressed per input and output token (not per-GPU-hour, not subscription, not freemium).
+ 7. Sub-index criteria: VIPI requires only 1–6; VIPI-Open requires the license field match the published open-weight list (Apache-2.0, MIT, Llama-*-Community, Qwen-License, Gemma license, or maintainer-classified open-weight); VIPI-Closed requires the license field match `Proprietary-*` or be otherwise classified proprietary.
+ 
+-Methodology §5 (line 121) preserves a retention-bias clause: a prior constituent that marginally violates one criterion may be retained for one additional cycle if the violation is transient. Discretion is exercised against the published retention criteria in §9.2 (lines 275–278) and disclosed in the rebalancing announcement.
++Methodology §5 preserves a retention-bias clause: a prior constituent that marginally violates one criterion may be retained for one additional cycle if the violation is transient. Discretion is exercised against the published retention criteria in §9.2 and disclosed in the rebalancing announcement.
+ 
+-Methodology §5 (line 117) excludes ineligible-license classifications (commercial-use-restricted source-available licenses) from both VIPI-Open and VIPI-Closed but admits them to the headline VIPI. The sub-indices are subsets of, not a partition of, the headline.
++Methodology §5 excludes ineligible-license classifications (commercial-use-restricted source-available licenses) from both VIPI-Open and VIPI-Closed but admits them to the headline VIPI. The sub-indices are subsets of, not a partition of, the headline.
+ 
+-Methodology §5 (line 119) excludes models from families not yet in the VCMI controlled vocabulary until the vocabulary is updated.
++Methodology §5 excludes models from families not yet in the VCMI controlled vocabulary until the vocabulary is updated.
+ 
+ ### Selection
+ 
+-When more than 20 VCMIs qualify for a sub-index, the maintainer selects 20 using the tie-breaker cascade in methodology §6 (lines 124–145):
++When more than 20 VCMIs qualify for a sub-index, the maintainer selects 20 using the tie-breaker cascade in methodology §6:
+ 
+ 1. Higher total provider coverage (more `provider_mappings`).
+ 2. Higher count of `confidence = high` mappings.
+@@ -46,18 +48,18 @@ All constituents are equally weighted. Each receives weight `1/N` where `N` is t
+ 
+ ### Compute
+ 
+-Daily compute follows methodology §7.2 (lines 167–186), §7.3 (lines 189–191), §8.1 (lines 208–230), and §8.4 (lines 250–258).
++Daily compute follows methodology §7.2, §7.3, §8.1, and §8.4.
+ 
+ Per-constituent close (4 steps):
+ 
+-1. Collect all `provider_mappings` with `confidence = high`. If fewer than two exist, fall back to including `confidence = medium`. The fallback is recorded in the daily audit record per the directive in §7.2 Step 1 (line 171), realized as the `confidence_fallback_constituents` key added to `audit_json` per plan §3.6 at c520214.
++1. Collect all `provider_mappings` with `confidence = high`. If fewer than two exist, fall back to including `confidence = medium`. The fallback is recorded in the daily audit record per the directive in §7.2 Step 1, realized as the `confidence_fallback_constituents` key added to `audit_json` per plan §3.6 at c520214. This fallback does not apply to sole-issuer proprietary constituents admitted under §5(3)(b), which have exactly one high-confidence mapping by construction and are treated under §7.2 as a complete input set rather than a degraded or fallback state.
+ 2. Collect prices from `offering_prices` where `quality_flag = 'clean'` and `timestamp ∈ [date 15:55:00, date 16:05:00)` UTC.
+ 3. Per-mapping close is the median of input and output prices observed in the window. Single-observation mappings use that observation. Zero-observation mappings are excluded from the day.
+ 4. Per-constituent close is the median across included mappings, computed separately for input and output. Blended price is `(3 × input + output) / 4`.
+ 
+-Outlier exclusion per §7.3 (line 189): any snapshot price exceeding 3× the 7-day trailing median for that mapping, or below 1/3 of that trailing median, is excluded from the median computation and logged in the daily audit record under `outlier_exclusions`. The 3× and 1/3 thresholds are the locked initial values; methodology §7.3 (line 189) commits to review at the first scheduled methodology review.
++Outlier exclusion per §7.3: any snapshot price exceeding 3× the 7-day trailing median for that mapping, or below 1/3 of that trailing median, is excluded from the median computation and logged in the daily audit record under `outlier_exclusions`. The 3× and 1/3 thresholds are the locked initial values; methodology §7.3 commits to review at the first scheduled methodology review.
+ 
+-Index value formula per §8.1 (lines 208–230):
++Index value formula per §8.1:
+ 
+ ```
+ VIPI_I(d) = (Σ_{c} w_c × blended_price_{c,d}) / D_I(d)
+@@ -69,11 +71,11 @@ The divisor `D_I` is initialized at the base date so that `VIPI_I(base) = 100`.
+ D_I_new = (Σ_{c in new basket} w_c_new × blended_price_{c,t}) / VIPI_I(t)_old
+ ```
+ 
+-Six published value kinds per sub-index per day per §8.4 (lines 250–258): `blended`, `input`, `output`, `best_blended`, `best_input`, `best_output`. The `best_*` variants substitute the cheapest provider per constituent for the median.
++Six published value kinds per sub-index per day per §8.4: `blended`, `input`, `output`, `best_blended`, `best_input`, `best_output`. The `best_*` variants substitute the cheapest provider per constituent for the median.
+ 
+ ### Halt
+ 
+-A sub-index is not published for a trading day under any of the conditions in methodology §7.4 (lines 195–200) or §12.2 (lines 386–390):
++A sub-index is not published for a trading day under any of the conditions in methodology §7.4 or §12.2:
+ 
+ - More than 30% of the sub-index's constituents have zero valid observations in the MOC window.
+ - More than 3 constituents are in outlier-excluded state simultaneously.
+@@ -81,13 +83,13 @@ A sub-index is not published for a trading day under any of the conditions in me
+ - A material methodology change in transition.
+ - A force majeure event affecting the Administrator's ability to publish.
+ 
+-Halts are disclosed immediately in the publication channel. A halted day is not backfilled unless the underlying issue is resolved and a defensible reconstructed value can be computed under the audit trail. The 30% and 3-constituent thresholds are locked initial values; methodology §7.4 (line 200) commits to review after 90 days of live publication.
++Halts are disclosed immediately in the publication channel. A halted day is not backfilled unless the underlying issue is resolved and a defensible reconstructed value can be computed under the audit trail. The 30% and 3-constituent thresholds are locked initial values; methodology §7.4 commits to review after 90 days of live publication.
+ 
+-Mid-cycle constituent removal (not addition) is permitted under methodology §9.3 (lines 282–290) only if the constituent's VCMI is retracted, formally deprecated with no continuing provider coverage, or subject to an active integrity concern. On removal the remaining constituents are re-weighted to `1/(N−1)`, the divisor is adjusted per §8.1 to preserve continuity at the removal close, and the vacated slot is filled at the next scheduled rebalancing returning all constituents to `1/N`.
++Mid-cycle constituent removal (not addition) is permitted under methodology §9.3 only if the constituent's VCMI is retracted, formally deprecated with no continuing provider coverage, or subject to an active integrity concern. On removal the remaining constituents are re-weighted to `1/(N−1)`, the divisor is adjusted per §8.1 to preserve continuity at the removal close, and the vacated slot is filled at the next scheduled rebalancing returning all constituents to `1/N`.
+ 
+ ### Corrections
+ 
+-The correction protocol per methodology §12.1 (lines 369–382) applies whenever a published value is later found to depend on a corrupted snapshot, a misclassified VCMI, or a calculation error:
++The correction protocol per methodology §12.1 applies whenever a published value is later found to depend on a corrupted snapshot, a misclassified VCMI, or a calculation error:
+ 
+ 1. Announced within 1 business day of error confirmation.
+ 2. Prior published value and corrected value both disclosed with reason.
+@@ -111,24 +113,24 @@ The following decision points cannot be reduced to algorithm at v0.1.3. The main
+ 
+ **Provider-mapping confidence levels.** Plan §4 (line 233) and plan §8 Session 4 (line 414) make explicit that mapping confidence is a curator judgment that cannot be derived from the spec alone. **Principle:** apply the four `high` criteria from VCMI v0.1.3 §6 (lines 190–194) per (provider, VCMI) pair; default to `medium` when the brand suffix is undocumented per VCMI §6 (line 207); default to `high` for pass-through resale per VCMI §6 (lines 211–213). Confidence assignments documented in the `0008` seed migration commit.
+ 
+-**Retention bias at rebalancing.** Methodology §5 (line 121) and §9.2 step 4 (lines 275–278) permit one-cycle retention of a constituent that marginally violates a criterion. **Principle:** exercised only for transient violations (provider API outages, single-day data gaps); not for structural delistings; reason recorded in the rebalancing announcement and the daily audit record.
++**Retention bias at rebalancing.** Methodology §5 and §9.2 step 4 permit one-cycle retention of a constituent that marginally violates a criterion. **Principle:** exercised only for transient violations (provider API outages, single-day data gaps); not for structural delistings; reason recorded in the rebalancing announcement and the daily audit record.
+ 
+-**Reasoning-model classification.** Methodology §5 criterion 5 (line 108) identifies reasoning models by `variant` containing `reasoning` or by explicit categorization in the VCMI notes field. **Principle:** the variant-string test is mechanical; the notes-field categorization is a curator marking applied where the variant string is ambiguous. The categorization is recorded in the `vcmi_registry.notes` column at the time of registry entry.
++**Reasoning-model classification.** Methodology §5 criterion 5 identifies reasoning models by `variant` containing `reasoning` or by explicit categorization in the VCMI notes field. **Principle:** the variant-string test is mechanical; the notes-field categorization is a curator marking applied where the variant string is ambiguous. The categorization is recorded in the `vcmi_registry.notes` column at the time of registry entry.
+ 
+-**Unrecognized-license classification.** Methodology §5.7 (line 112) and §5 (line 117) leave license classification to the maintainer when the license is not in the published open-weight list and does not match `Proprietary-*`. **Principle:** unrecognized licenses default to ineligible-for-VIPI-Open and ineligible-for-VIPI-Closed (admitted to headline VIPI per §4 lines 95–96) until the maintainer publishes a classification update. Classifications are announced in the VIPI changelog and recorded in `vcmi_registry.license_class`.
++**Unrecognized-license classification.** Methodology §5.7 and §5 leave license classification to the maintainer when the license is not in the published open-weight list and does not match `Proprietary-*`. **Principle:** unrecognized licenses default to ineligible-for-VIPI-Open and ineligible-for-VIPI-Closed (admitted to headline VIPI per §4) until the maintainer publishes a classification update. Classifications are announced in the VIPI changelog and recorded in `vcmi_registry.license_class`.
+ 
+-**Sustained loss-leader and window-dressing exclusions.** Methodology §7.3 (line 191) permits the Administrator to exclude a mapping when sustained pricing patterns suggest manipulation under §9.3. **Principle:** discretionary; any exclusion announced with rationale in the daily audit record and the VIPI changelog.
++**Sustained loss-leader and window-dressing exclusions.** Methodology §7.3 permits the Administrator to exclude a mapping when sustained pricing patterns suggest manipulation under §9.3. **Principle:** discretionary; any exclusion announced with rationale in the daily audit record and the VIPI changelog.
+ 
+ ## Numeric thresholds locked at v0.1.3 (with review windows)
+ 
+ | Threshold | Value at v0.1.3 | Review trigger | Source |
+ |---|---|---|---|
+-| Outlier multiplier (high) | 3× 7-day trailing median | First scheduled methodology review | §7.3 line 189 |
+-| Outlier multiplier (low) | 1/3 of 7-day trailing median | First scheduled methodology review | §7.3 line 189 |
+-| Halt: zero-observation constituents | More than 30% of sub-index | After 90 days of live publication | §7.4 line 200 |
+-| Halt: simultaneous outlier-excluded constituents | More than 3 of any sub-index | After 90 days of live publication | §7.4 line 200 |
+-| Continuity threshold | 95% of close snapshots over 14 days | No v0.2 case identified | §16 Q7 line 522 |
+-| Constituent cap | N = 20 per sub-index | Each v0.x release | §16 Q2 line 512 |
++| Outlier multiplier (high) | 3× 7-day trailing median | First scheduled methodology review | §7.3 |
++| Outlier multiplier (low) | 1/3 of 7-day trailing median | First scheduled methodology review | §7.3 |
++| Halt: zero-observation constituents | More than 30% of sub-index | After 90 days of live publication | §7.4 |
++| Halt: simultaneous outlier-excluded constituents | More than 3 of any sub-index | After 90 days of live publication | §7.4 |
++| Continuity threshold | 95% of clean-snapshot MOC closes over 14 days | No v0.2 case identified | §16 Q7 |
++| Constituent cap | N = 20 per sub-index | Each v0.x release | §16 Q2 |
+ 
+ Each threshold is a v0.1.3 commitment. Any change to a threshold value is a methodology change under §12.3 with the 30-day pre-announcement and 14-day consultation requirements.
+ 
+@@ -136,7 +138,7 @@ Each threshold is a v0.1.3 commitment. Any change to a threshold value is a meth
+ 
+ Three gaps were identified by Day 53 read-only investigation against methodology, plan, and migrations. All three are resolved at c520214; no v0.1.3 amendment is open.
+ 
+-**Gap 26 (trailing-median window for mappings with fewer than 7 days of history).** Resolved by methodology §8.2 (lines 232–238): "the outlier-exclusion rule (Section 7.3) has at least 7 days of trailing-median data from day one of publication." The base date is set with operational headroom on top of the §5 criterion 4 (line 107) 14-day continuity requirement. The launch case is fully covered. Future monthly rebalancings are covered because §5 criterion 4 forces 14 days of continuous observation for any newly-admitted constituent. The residual case (a new mapping added mid-cycle to an existing constituent that is not itself new) is flagged as a v0.2 question, listed below under known omissions.
++**Gap 26 (trailing-median window for mappings with fewer than 7 days of history).** Resolved by methodology §8.2: "the outlier-exclusion rule (Section 7.3) has at least 7 days of trailing-median data from day one of publication." The base date is set with operational headroom on top of the §5 criterion 4 14-day continuity requirement. The launch case is fully covered. Future monthly rebalancings are covered because §5 criterion 4 forces 14 days of continuous observation for any newly-admitted constituent. The residual case (a new mapping added mid-cycle to an existing constituent that is not itself new) is flagged as a v0.2 question, listed below under known omissions.
+ 
+ **Gap 27 (medium-confidence fallback degradation note in audit JSON).** Resolved by plan §3.6 amendment at c520214. When §7.2 Step 1 fallback is triggered for any constituent on a given day, an additional top-level key `confidence_fallback_constituents: [vcmi, ...]` is included in `audit_json`. The amendment is purely additive; no migration is required because `audit_json` is `TEXT NOT NULL` per migration `0006`.
+ 
+@@ -146,20 +148,17 @@ Three gaps were identified by Day 53 read-only investigation against methodology
+ 
+ The following items are out of scope for v0.1.3 and listed here so that a reader of the public methodology can locate every known gap.
+ 
+-**v0.2 priorities.** Methodology §16 open questions Q1 through Q7 (lines 510–522): VIPI-Best promotion, cap growth, usage-weighted variant, pass-through resale handling, tokenizer normalization, rebalancing cadence, continuity threshold. Plus the mid-cycle new-mapping <7-day-history residual from gap 26, and the VCMI v0.1.3 §10 corrections automated workflow per plan §10.
++**v0.2 priorities.** Methodology §16 open questions Q1 through Q7: VIPI-Best promotion, cap growth, usage-weighted variant, pass-through resale handling, tokenizer normalization, rebalancing cadence, continuity threshold. Plus the mid-cycle new-mapping <7-day-history residual from gap 26, and the VCMI v0.1.3 §10 corrections automated workflow per plan §10.
+ 
+ **v0.1.4 deferrals.** Per plan §10: richer audit-record fields, notification and alerting on publication failure or halt trigger, dashboard at `volthq.dev/vipi`.
+ 
+-**v1.0 commitments.** Per plan §10 and methodology §17 (lines 532–554): settlement-grade external audit, Advisory Group of 3–5 external members, IOSCO Statement of Adherence, provider-side manipulation analysis, formal IOSCO adherence across all 19 principles.
++**v1.0 commitments.** Per plan §10 and methodology §17: settlement-grade external audit, Advisory Group of 3–5 external members, IOSCO Statement of Adherence, provider-side manipulation analysis, formal IOSCO adherence across all 19 principles.
+ 
+-**Out of scope for v0.1.3 entirely.** Methodology §15 (lines 487–498) enumerates: reasoning-model-specific index, quality-adjusted hedonic variant, tokenizer normalization, intraday VIPI-Spot, settlement-specific variants, latency-adjusted variants, regional sub-indices, context-window-tier sub-indices, proprietary-cached and proprietary-batch-discount variants, reasoning-token billing within non-reasoning models, detection of silent quantization or serving-tier changes by providers.
++**Out of scope for v0.1.3 entirely.** Methodology §15 enumerates: reasoning-model-specific index, quality-adjusted hedonic variant, tokenizer normalization, intraday VIPI-Spot, settlement-specific variants, latency-adjusted variants, regional sub-indices, context-window-tier sub-indices, proprietary-cached and proprietary-batch-discount variants, reasoning-token billing within non-reasoning models, detection of silent quantization or serving-tier changes by providers.
+ 
+ ## Verification commitment
+ 
+-On May 18, 2026, two migrations are committed to `origin/main`:
+-
+-- `packages/workers/vipi-cron/migrations/0008_seed_vcmi_provider_mappings_inaugural.sql`
+-- `packages/workers/vipi-cron/migrations/0009_seed_vipi_basket_inaugural.sql`
++The provider-mapping migration `0008_seed_vcmi_provider_mappings_inaugural.sql` was committed ahead of the base date on Day 73. The §5(3)/§5(4)/§7.2 amendment commit lands before the inaugural basket migration `0009_seed_vipi_basket_inaugural.sql`, which is committed to `origin/main` on May 18, 2026; that commit ordering is the provenance record described in the anchor section above.
+ 
+ The commit messages document each curator decision: provider-mapping confidence assignments per (provider, VCMI) pair; tie-breaker invocations under §6; retention-bias calls under §5 (none expected at inception); license-class assignments for any license string not already in `vcmi_registry`.
+ 
+-- 
+2.39.2 (Apple Git-143)
+

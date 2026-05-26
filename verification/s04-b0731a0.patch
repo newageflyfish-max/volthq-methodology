@@ -1,0 +1,70 @@
+From b0731a057c2bdd08bc8f31665a4d5ff0dd983a55 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Wed, 13 May 2026 09:27:33 -0600
+Subject: [PATCH] =?UTF-8?q?vipi(methodology):=20land=20Decision=20H=20?=
+ =?UTF-8?q?=E2=80=94=20new=20=C2=A711.3=20Source=20Classification=20Policy?=
+ =?UTF-8?q?=20+=20=C2=A711=20renumber?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- §11.3 NEW: Source Classification Policy subsection (~115 words). Documents Administrator's commitment to publish classification logic that maps each provider mapping to evidentiary_tier (live_api / pricing_page_snapshot per migration 0014) + per-mapping evidentiary sub-class (api_inline_price / api_catalog_gated / static_by_design / gpu_hour_derived per §10.4 schema). Annual review. Operationalizes IOSCO P8; adopts BMR Article 27 disclosure framework as design reference (not regulatory claim of EU benchmark status).
+- §11.3 (was Oversight (Public Phase)) → §11.4 (heading renumber only)
+- §11.4 (was Record Retention) → §11.5 (heading renumber only)
+- §11.5 (was External Audit) → §11.6 (heading renumber only)
+- §11.2 L373: internal cross-ref to Advisory Group's remit bumped (Section 11.3) → (Section 11.4) to follow the Oversight renumber
+- §17 P8 forward-reference resolved: 'Source Classification Policy in §11 (forthcoming v0.1.3 amendment)' → 'Source Classification Policy in §11.3' (was dangling forward-ref from commit eca9c34; now anchored)
+
+Decisions ref: ~/Desktop/volt-session-logs/day71_decisions.md (Decision H: H1-as-written)
+Verification: Claude Code anchor read (Day 72 morning) + 5-claim prose verification (changelog, evidentiary_tier enum, BMR Article 27 source, Hierarchy convention, silent_fallback_exclusions scope) — all primary sources confirmed
+Closes dangling forward-references from eca9c34
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index 0a96289..bb6abfc 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -370,9 +370,13 @@ Volt HQ maintains a written conflicts-of-interest register, published on volthq.
+ 
+ Changes to this register are disclosed within 10 business days of arising.
+ 
+-**Provider-side manipulation risk.** Volt HQ does not regulate provider pricing decisions and cannot prevent a provider from setting prices that influence VIPI. This risk is structurally analogous to LIBOR's submitter-panel self-interest, with three critical mitigations: (a) providers' published prices are actual commercial rates at which customers transact, not estimates — any manipulation would require a provider to offer suboptimal prices to all customers simultaneously, incurring direct commercial cost; (b) the median-across-providers computation (Section 7.2) limits any single provider's influence on a constituent's price; (c) as VIPI adoption grows and potential settlement applications emerge, provider-side manipulation risk will warrant dedicated monitoring. The Administrator commits to formal provider-manipulation analysis at v1.0 and inclusion of provider-side conflict monitoring in the Advisory Group's remit (Section 11.3).
++**Provider-side manipulation risk.** Volt HQ does not regulate provider pricing decisions and cannot prevent a provider from setting prices that influence VIPI. This risk is structurally analogous to LIBOR's submitter-panel self-interest, with three critical mitigations: (a) providers' published prices are actual commercial rates at which customers transact, not estimates — any manipulation would require a provider to offer suboptimal prices to all customers simultaneously, incurring direct commercial cost; (b) the median-across-providers computation (Section 7.2) limits any single provider's influence on a constituent's price; (c) as VIPI adoption grows and potential settlement applications emerge, provider-side manipulation risk will warrant dedicated monitoring. The Administrator commits to formal provider-manipulation analysis at v1.0 and inclusion of provider-side conflict monitoring in the Advisory Group's remit (Section 11.4).
+ 
+-### 11.3. Oversight (Public Phase)
++### 11.3. Source Classification Policy
++
++The Administrator publishes — and maintains in the methodology changelog — the classification logic that assigns every provider mapping an `evidentiary_tier` value (one of `live_api` or `pricing_page_snapshot`) and a per-mapping evidentiary sub-class (`api_inline_price`, `api_catalog_gated`, `static_by_design`, or `gpu_hour_derived`) exposed in each day's audit record at §10.4. Mappings omitted under the curation policy's silent-FALLBACK rule are disclosed in the daily audit record via the `silent_fallback_exclusions` key; Akash GPU-hour-derived offerings are excluded under the curation policy's eligibility rules. The classification policy is reviewed annually alongside the methodology. This commitment operationalizes IOSCO Principle 8 (Hierarchy of Inputs) and adopts the BMR Article 27 disclosure framework as a design reference, not as a regulatory claim of EU benchmark status.
++
++### 11.4. Oversight (Public Phase)
+ 
+ For the public phase (v1.0 and later), the Administrator commits to establishing a **VIPI Advisory Group** of 3–5 external members drawn from:
+ 
+@@ -382,11 +386,11 @@ For the public phase (v1.0 and later), the Administrator commits to establishing
+ 
+ The Advisory Group reviews material methodology changes, consults on inclusion-criteria revisions, and reviews the annual compliance statement. The Advisory Group is advisory; final methodology decisions remain with the Administrator.
+ 
+-### 11.4. Record Retention
++### 11.5. Record Retention
+ 
+ All inputs, calculations, audit records, correction logs, and rebalancing announcements are retained for a minimum of **5 years** from the date of publication. This meets IOSCO Principle 17 (Audits) requirements. Each VIPI value is stamped with a `methodology_version` of the form `vipi-X.Y.Z` corresponding to the version under which it was computed; this is distinct from the `vcmi-X.Y.Z` namespace stamped on identity-layer records and from any other Volt HQ measurement-product version namespaces.
+ 
+-### 11.5. External Audit
++### 11.6. External Audit
+ 
+ At v1.0 public launch, Volt HQ commits to an annual external audit of VIPI calculation methodology and adherence to published procedures. Auditor selection and audit scope will be disclosed at that time.
+ 
+@@ -573,7 +577,7 @@ VIPI v0.1 is designed to be structurally consistent with IOSCO Principles for Fi
+ | 5. Internal Oversight | Maintainer-led | Advisory Group established |
+ | 6. Benchmark Design | Documented (Sections 3–9) | Unchanged |
+ | 7. Data Sufficiency | Observed prices (Section 7.1) | Posted-price input class disclosed per-publication via §10.4 evidentiary_sub_class_publication_mix; substantive transactional anchoring deferred to v0.2+ research item. |
+-| 8. Hierarchy of Inputs | Primary feed + fallbacks | Per-mapping evidentiary_sub_class classification + per-determination publication mix published in daily audit record (§10.4); see Source Classification Policy in §11 (forthcoming v0.1.3 amendment). |
++| 8. Hierarchy of Inputs | Primary feed + fallbacks | Per-mapping evidentiary_sub_class classification + per-determination publication mix published in daily audit record (§10.4); see Source Classification Policy in §11.3. |
+ | 9. Transparency | Methodology published | Methodology published + per-publication audit record (§10.4) including evidentiary_sub_class_publication_mix exposing the input-hierarchy distribution. |
+ | 10. Periodic Review | Annual methodology review | Unchanged |
+ | 11. Content of the Methodology | This document | Unchanged |
+-- 
+2.39.2 (Apple Git-143)
+

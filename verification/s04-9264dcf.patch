@@ -1,0 +1,60 @@
+From 9264dcf73da480b9a97b757afbdbcaa1cfb0a4b2 Mon Sep 17 00:00:00 2001
+From: Volt HQ <noreply@volthq.dev>
+Date: Tue, 12 May 2026 10:22:27 -0600
+Subject: [PATCH] =?UTF-8?q?vipi(methodology):=20label=20BMR=20Art=2027(2)(?=
+ =?UTF-8?q?e)/(f)=20substance=20+=20=C2=A715=20deferral?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Adds cross-reference labels at §7.4, §12.1, §12.2 pointing to the BMR
+Article 27 sub-paragraphs each subsection substantively addresses.
+Adds §15 deferral entry stating that formal alignment of methodology
+procedural taxonomy to full BMR Art 27(2) sub-paragraph structure is
+scheduled for v0.1.4. Day 70 verification Subagent 2 Check 3.
+---
+ docs/vipi/VIPI_v0.1.3_methodology.md | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/docs/vipi/VIPI_v0.1.3_methodology.md b/docs/vipi/VIPI_v0.1.3_methodology.md
+index f69b578..c1e195d 100644
+--- a/docs/vipi/VIPI_v0.1.3_methodology.md
++++ b/docs/vipi/VIPI_v0.1.3_methodology.md
+@@ -201,6 +201,8 @@ If, on any trading day:
+ 
+ then that sub-index is **not published** for that day. The 30% and 3-constituent thresholds are initial values; the Administrator will review them against observed halt-trigger frequency after 90 days of live publication. The missing day is later backfilled only if the underlying data issue is resolved and the audit trail supports a reconstructed calculation; otherwise the day remains a gap. Halts are disclosed immediately in the VIPI publication channel. This rule ensures VIPI is never published with known-degraded inputs.
+ 
++*BMR correspondence: this section addresses the substance of BMR Article 27(2)(e) (procedures to be followed during periods of market stress or in circumstances where transaction data sources become insufficient or unrepresentative) for data-availability stress. See §15 for the formal-labelling deferral notice.*
++
+ ---
+ 
+ ## 8. Index Calculation
+@@ -383,6 +385,8 @@ The correction protocol:
+ 3. Corrections are published in the daily audit record and the VIPI changelog.
+ 4. Downstream consumers (contracts, research citations) are directed to the corrected value as authoritative. Historical time series on volthq.dev reflect the corrected value; prior values are preserved in the changelog for audit.
+ 
++*BMR correspondence: this section addresses the substance of BMR Article 27(2)(f) (procedures for re-determination of the Benchmark including, where appropriate, re-publication). See §15 for the formal-labelling deferral notice.*
++
+ ### 12.2. Halts
+ 
+ A sub-index is halted (not published) for a trading day under the conditions in Section 7.4 (insufficient data). Additional halt triggers:
+@@ -393,6 +397,8 @@ A sub-index is halted (not published) for a trading day under the conditions in
+ 
+ Halts are disclosed immediately in the publication channel. A halted day is not backfilled unless the underlying issue is resolved and a defensible reconstructed value can be computed under the audit trail.
+ 
++*BMR correspondence: this section addresses the substance of BMR Article 27(2)(e) for non-data-stress halts (integrity, force majeure, methodology transition). See §15 for the formal-labelling deferral notice.*
++
+ ### 12.3. Methodology Versioning
+ 
+ Every VIPI value is associated with the methodology version under which it was computed. When methodology changes take effect:
+@@ -498,6 +504,7 @@ The following are explicitly deferred:
+ - Proprietary-cached or proprietary-batch-discount variants (Section 15 note on headline vs effective pricing).
+ - Reasoning-token billing within non-reasoning models (e.g., extended-thinking tokens billed at output rates) is not separately tracked in v0.1. The published output price reflects the provider's standard output token rate.
+ - Detection of silent quantization or serving-tier changes by providers (where the model string is unchanged but the underlying weights or precision are altered) is not within scope of v0.1 automated monitoring. Such changes, if discovered, are handled as VCMI corrections.
++- BMR Article 27(2)(e) market-stress-period procedures and 27(2)(f) error-handling procedures: substantive coverage is present in §7.4 (data-availability stress halt), §12.1 (corrections protocol), and §12.2 (non-data halt triggers including integrity, force majeure, and methodology transition), with cross-reference labels added to each. Formal alignment of the methodology's procedural taxonomy to the full BMR Article 27(2) sub-paragraph structure — including market-stress procedures distinct from data-availability stress, and a unified error-handling registry — is deferred to v0.1.4.
+ 
+ ### Note on headline vs effective pricing
+ 
+-- 
+2.39.2 (Apple Git-143)
+
