@@ -46,7 +46,7 @@ Two distinct error-handling mechanisms apply:
 
 **Documentation errata.** Corrections to Chain of Custody content (and, by extension of the same documentation-errata protocol, to Methodology, Curation Policy, Pre-Registration, or Reproducibility Appendix content) — a missing SHA, a misclassified commit, an enumeration error, a typographical error affecting normative substance — are governed by `VIPI_v0.1.3_chain_of_custody.md` §11. Corrections are disclosed on the face of the reissued document with prior text, corrected text, reason, and affected sections. The worked example is the Reproducibility Appendix errata reissue at commit `9e81ac9`, which corrected the §5.2 mis-enumeration. This mechanism is documentation errata; it is not the Methodology §12.1 protocol.
 
-**Published-value corrections.** Corrections to a published VIPI value are governed by Methodology §12.1. This mechanism is out of scope for this repository because no VIPI value lives here. Published values reside at `https://volthq.dev` and are subject to the Methodology §12.1 correction protocol.
+**Published-value corrections.** Corrections to a published VIPI value are governed by Methodology §12.1. This mechanism is out of scope for this repository because no VIPI value lives here. Published values are currently served from `https://volt-feed.volthq.workers.dev/v1/vipi/daily`; a dedicated `volthq.dev` endpoint is in preparation. Both surfaces are subject to the Methodology §12.1 correction protocol.
 
 ## 7. Methodology changes
 
