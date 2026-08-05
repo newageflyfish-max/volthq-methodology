@@ -1,5 +1,7 @@
 # VIPI v0.1.6 — Public Methodology Mirror
 
+> **Notice:** VIPI publication was discontinued effective 2026-08-05. The historical series, audit records, correction record, and all Methodology versions remain public and unchanged. See [VIPI_discontinuation_notice.md](VIPI_discontinuation_notice.md).
+
 ## 1. What this repository is
 
 This is the public methodology mirror of the Volt Inference Price Index (VIPI). The current Methodology version in force is v0.1.6 (effective 2026-07-22); v0.1.3, v0.1.4, and v0.1.5 are retained as superseded per Methodology §12.3. The Volt HQ source monorepo is permanently private; this mirror is the canonical public audit surface for the v0.1.3 Methodology, Chain of Custody, Curation Policy, Pre-Registration, and Reproducibility Appendix, together with the verification artifacts that allow a reviewer to reconstruct the Inaugural Basket's provenance from first principles. The current published version-pinned methodology page lives at https://volthq.dev/methodology/v0.1.6 and is the URL referenced in `CITATION.cff`.
