@@ -1,8 +1,8 @@
-# VIPI v0.1.3 — Public Methodology Mirror
+# VIPI v0.1.6 — Public Methodology Mirror
 
 ## 1. What this repository is
 
-This is the public methodology mirror of the Volt Inference Price Index (VIPI) at version 0.1.3. The Volt HQ source monorepo is permanently private; this mirror is the canonical public audit surface for the v0.1.3 Methodology, Chain of Custody, Curation Policy, Pre-Registration, and Reproducibility Appendix, together with the verification artifacts that allow a reviewer to reconstruct the Inaugural Basket's provenance from first principles. The published version-pinned methodology page lives at https://volthq.dev/methodology/v0.1.3 and is the URL referenced in `CITATION.cff`.
+This is the public methodology mirror of the Volt Inference Price Index (VIPI). The current Methodology version in force is v0.1.6 (effective 2026-07-22); v0.1.3, v0.1.4, and v0.1.5 are retained as superseded per Methodology §12.3. The Volt HQ source monorepo is permanently private; this mirror is the canonical public audit surface for the v0.1.3 Methodology, Chain of Custody, Curation Policy, Pre-Registration, and Reproducibility Appendix, together with the verification artifacts that allow a reviewer to reconstruct the Inaugural Basket's provenance from first principles. The current published version-pinned methodology page lives at https://volthq.dev/methodology/v0.1.6 and is the URL referenced in `CITATION.cff`.
 
 ## 2. What VIPI is
 
@@ -38,7 +38,7 @@ The `history/` subdirectory retains prior Methodology versions and pre-publicati
 - `VIPI_v0.1.1_methodology.md`, `VIPI_v0.1.2_methodology.md` — superseded Methodology versions
 - `VIPI_v0.1_review_round1.md`, `VIPI_v0.1.1_codex_review.md`, `VIPI_v0.1.1_review_round2.md`, `VIPI_v0.1.2_codex_review.md`, `VIPI_v0.1.2_review_round3.md`, `VIPI_v0.1.3_codex_review.md` — pre-publication review artifacts retained as part of the v0.1.3 evolution record
 
-Prior versions are not authoritative. v0.1.3 is the only Methodology version currently in force. Retention of superseded versions follows the convergent practice across S&P Platts, ICE Benchmark Administration, IOSCO Principle 12 (Changes to the Methodology), and academic reproducibility repositories: supersession is signalled, not deleted.
+Prior versions are not authoritative. v0.1.6 is the Methodology version currently in force; v0.1.3, v0.1.4, and v0.1.5 are retained as superseded per Methodology §12.3. Retention of superseded versions follows the convergent practice across S&P Platts, ICE Benchmark Administration, IOSCO Principle 12 (Changes to the Methodology), and academic reproducibility repositories: supersession is signalled, not deleted.
 
 ## 6. Errata and corrections
 
@@ -62,7 +62,7 @@ Per IOSCO Principle 10 (Periodic Review), the Methodology is reviewed annually a
 
 ## 10. Citation
 
-Cite VIPI v0.1.3 using the metadata in `CITATION.cff`. A Zenodo concept-DOI and per-version DOI are planned post-launch; the README will be updated and `CITATION.cff` will be amended to include the DOI fields when the deposit is complete.
+Cite VIPI v0.1.6 using the metadata in `CITATION.cff`. A Zenodo concept-DOI and per-version DOI are planned post-launch; the README will be updated and `CITATION.cff` will be amended to include the DOI fields when the deposit is complete.
 
 ## 11. Relationship to source monorepo
 

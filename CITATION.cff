@@ -1,14 +1,14 @@
 cff-version: 1.2.0
 message: "If you use or reference the Volt Inference Price Index (VIPI), please cite it as below."
 title: "Volt Inference Price Index (VIPI)"
-version: "0.1.5"
-date-released: 2026-06-16
+version: "0.1.6"
+date-released: 2026-07-22
 abstract: "A daily-fix price index for AI inference across a curated basket of providers. The methodology covers basket selection rules, anomaly handling, chain-of-custody documentation, and a daily fix at 16:07 UTC. Designed for inference cost forecasting, contract benchmarking, derivative reference rates, and academic research on AI inference pricing."
 authors:
   - family-names: "Arnot"
     given-names: "Jack"
     affiliation: "Volt HQ"
-url: "https://volthq.dev/methodology/v0.1.5"
+url: "https://volthq.dev/methodology/v0.1.6"
 repository-code: "https://github.com/newageflyfish-max/volthq-methodology"
 license: "CC-BY-4.0"
 type: "software"
